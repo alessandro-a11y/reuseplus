@@ -7,6 +7,18 @@ class Trade extends Model {
         type: DataTypes.ENUM('pending', 'accepted', 'rejected', 'completed', 'canceled'),
         defaultValue: 'pending',
         allowNull: false
+      },
+      sender_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      receiver_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      item_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
       }
     }, {
       sequelize,
