@@ -1,29 +1,52 @@
-const Trade = require('../models/Trade');
+const TradeService = require('../services/TradeService');
 
 module.exports = {
-  // Criar uma nova solicitação de troca
+
   async store(req, res) {
     try {
       const { receiver_id, item_id } = req.body;
-      
-      // O id de quem envia (sender_id) virá do Token JWT através do middleware de autenticação
-      const sender_id = req.userId; 
+      const sender_id = req.userId;
 
-      // Validação simples para o usuário não trocar com ele mesmo
-      if (sender_id === Number(receiver_id)) {
-        return res.status(400).json({ error: 'Você não pode propor uma troca com você mesmo.' });
-      }
-
-      const trade = await Trade.create({
-        sender_id,
-        receiver_id,
-        item_id,
-        status: 'pending' // Começa sempre como pendente
-      });
-
+      const trade = await TradeService.createTrade({ sender_id, receiver_id, item_id });
       return res.status(201).json(trade);
     } catch (error) {
-      return res.status(500).json({ error: 'Erro ao processar a solicitação de troca.' });
+      return res.status(400).json({ error: error.message });
+    }
+  },
+
+  async index(req, res) {
+    try {
+      const trades = await TradeService.getUserTrades(req.userId);
+      return res.json(trades);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  },
+
+  async accept(req, res) {
+    try {
+      const trade = await TradeService.acceptTrade(req.params.id, req.userId);
+      return res.json(trade);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  },
+
+  async reject(req, res) {
+    try {
+      const trade = await TradeService.rejectTrade(req.params.id, req.userId);
+      return res.json(trade);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
+    }
+  },
+
+  async cancel(req, res) {
+    try {
+      const trade = await TradeService.cancelTrade(req.params.id, req.userId);
+      return res.json(trade);
+    } catch (error) {
+      return res.status(400).json({ error: error.message });
     }
   }
 };
