@@ -3,12 +3,29 @@ const { Model, DataTypes } = require('sequelize');
 class User extends Model {
   static init(sequelize) {
     super.init({
-      nome: DataTypes.STRING,
-      email: DataTypes.STRING,
-      senha: DataTypes.STRING,
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
+      nome: {
+        type: DataTypes.STRING,
+        allowNull: false
+      },
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: { isEmail: true }
+      },
+      senha: {
+        type: DataTypes.STRING,
+        allowNull: false
+      }
     }, {
       sequelize,
       tableName: 'users',
+      timestamps: true,
       underscored: false,
     });
   }

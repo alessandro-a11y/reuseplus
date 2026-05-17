@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const Trade = require('../models/Trade');
-const User = require('../models/User');
+const User = require('../models/user');
 const Item = require('../models/Item');
 
 class TradeService {

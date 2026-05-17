@@ -12,7 +12,7 @@ const sequelize = new Sequelize(dbConfig.url, {
   logging: false,
 });
 
-const User = require('../models/User');
+const User = require('../models/user');
 const Item = require('../models/Item');
 const Trade = require('../models/Trade');
 

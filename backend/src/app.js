@@ -1,23 +1,30 @@
 const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+require('dotenv').config();
 const tradeRoutes = require('./routes/tradeRoutes');
-require('./database'); // Carrega a inicialização do banco de dados (index.js)
+require('./database');
 
-class App {
-  constructor() {
-    this.server = express();
+const app = express();
 
-    this.middlewares();
-    this.routes();
-  }
+app.use(helmet());
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  middlewares() {
-    this.server.use(express.json());
-  }
+app.use('/api', tradeRoutes);
 
-  routes() {
-    // Vincula as suas rotas de troca ao servidor
-    this.server.use(tradeRoutes);
-  }
-}
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', mensagem: 'ReUse+ API funcionando' });
+});
 
-module.exports = new App().server;
+app.use((req, res) => {
+  res.status(404).json({ erro: 'Rota não encontrada' });
+});
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ erro: 'Erro interno do servidor' });
+});
+
+module.exports = app;
