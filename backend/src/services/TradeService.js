@@ -1,7 +1,6 @@
 const { Op } = require('sequelize');
-const Trade = require('../models/Trade');
-const User = require('../models/user');
-const Item = require('../models/Item');
+const { models } = require('../database');
+const Trade = models.Trade;
 
 class TradeService {
 
@@ -25,7 +24,6 @@ class TradeService {
       status: 'pending'
     });
 
-    // Retorna com detalhes
     return this._getTradeWithDetails(trade.id);
   }
 
@@ -89,15 +87,14 @@ class TradeService {
     return this._getTradeWithDetails(trade.id);
   }
 
-  // Busca uma troca com todos os detalhes
   async _getTradeWithDetails(tradeId) {
     return Trade.findByPk(tradeId, {
       include: this._includes()
     });
   }
 
-  // Define os includes padrão
 _includes() {
+    const { User } = require('../database').models;
     return [
       {
         model: User,
@@ -108,11 +105,6 @@ _includes() {
         model: User,
         as: 'receiver',
         attributes: ['id', 'nome', 'email']
-      },
-      {
-        model: Item,
-        as: 'item',
-        attributes: ['id', 'titulo', 'descricao']
       }
     ];
   }
