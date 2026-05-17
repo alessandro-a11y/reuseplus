@@ -1,23 +1,17 @@
 const { Op } = require('sequelize');
 const Trade = require('../models/Trade');
+const User = require('../models/User');
+const Item = require('../models/Item');
 
 class TradeService {
 
-  // Criar uma nova solicitação de troca
   async createTrade({ sender_id, receiver_id, item_id }) {
-
-    // Regra: não pode trocar consigo mesmo
     if (Number(sender_id) === Number(receiver_id)) {
       throw new Error('Você não pode propor uma troca para si mesmo.');
     }
 
-    // Regra: não pode ter uma troca pendente com o mesmo item
     const existingTrade = await Trade.findOne({
-      where: {
-        item_id,
-        sender_id,
-        status: 'pending'
-      }
+      where: { item_id, sender_id, status: 'pending' }
     });
 
     if (existingTrade) {
@@ -31,10 +25,10 @@ class TradeService {
       status: 'pending'
     });
 
-    return trade;
+    // Retorna com detalhes
+    return this._getTradeWithDetails(trade.id);
   }
 
-  // Listar histórico de trocas do usuário
   async getUserTrades(userId) {
     const trades = await Trade.findAll({
       where: {
@@ -43,74 +37,84 @@ class TradeService {
           { receiver_id: userId }
         ]
       },
+      include: this._includes(),
       order: [['created_at', 'DESC']]
     });
 
     return trades;
   }
 
-  // Aceitar uma troca
   async acceptTrade(tradeId, userId) {
     const trade = await Trade.findByPk(tradeId);
 
-    if (!trade) {
-      throw new Error('Troca não encontrada.');
-    }
-
-    // Regra: só o destinatário pode aceitar
+    if (!trade) throw new Error('Troca não encontrada.');
     if (Number(trade.receiver_id) !== Number(userId)) {
       throw new Error('Apenas o destinatário pode aceitar a troca.');
     }
-
-    // Regra: só pode aceitar se estiver pendente
     if (trade.status !== 'pending') {
       throw new Error(`Não é possível aceitar uma troca com status "${trade.status}".`);
     }
 
     await trade.update({ status: 'accepted' });
-    return trade;
+    return this._getTradeWithDetails(trade.id);
   }
 
-  // Rejeitar uma troca
   async rejectTrade(tradeId, userId) {
     const trade = await Trade.findByPk(tradeId);
 
-    if (!trade) {
-      throw new Error('Troca não encontrada.');
-    }
-
-    // Regra: só o destinatário pode rejeitar
+    if (!trade) throw new Error('Troca não encontrada.');
     if (Number(trade.receiver_id) !== Number(userId)) {
       throw new Error('Apenas o destinatário pode rejeitar a troca.');
     }
-
     if (trade.status !== 'pending') {
       throw new Error(`Não é possível rejeitar uma troca com status "${trade.status}".`);
     }
 
     await trade.update({ status: 'rejected' });
-    return trade;
+    return this._getTradeWithDetails(trade.id);
   }
 
-  // Cancelar uma troca
   async cancelTrade(tradeId, userId) {
     const trade = await Trade.findByPk(tradeId);
 
-    if (!trade) {
-      throw new Error('Troca não encontrada.');
-    }
-
-    // Regra: só o remetente pode cancelar
+    if (!trade) throw new Error('Troca não encontrada.');
     if (Number(trade.sender_id) !== Number(userId)) {
       throw new Error('Apenas o remetente pode cancelar a troca.');
     }
-
     if (trade.status !== 'pending') {
       throw new Error(`Não é possível cancelar uma troca com status "${trade.status}".`);
     }
 
     await trade.update({ status: 'canceled' });
-    return trade;
+    return this._getTradeWithDetails(trade.id);
+  }
+
+  // Busca uma troca com todos os detalhes
+  async _getTradeWithDetails(tradeId) {
+    return Trade.findByPk(tradeId, {
+      include: this._includes()
+    });
+  }
+
+  // Define os includes padrão
+_includes() {
+    return [
+      {
+        model: User,
+        as: 'sender',
+        attributes: ['id', 'nome', 'email']
+      },
+      {
+        model: User,
+        as: 'receiver',
+        attributes: ['id', 'nome', 'email']
+      },
+      {
+        model: Item,
+        as: 'item',
+        attributes: ['id', 'name', 'description']
+      }
+    ];
   }
 }
 

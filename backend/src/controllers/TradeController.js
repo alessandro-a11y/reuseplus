@@ -16,7 +16,8 @@ module.exports = {
 
   async index(req, res) {
     try {
-      const trades = await TradeService.getUserTrades(req.userId);
+      const userId = req.userId || 1; // temporário para testes
+      const trades = await TradeService.getUserTrades(userId);
       return res.json(trades);
     } catch (error) {
       return res.status(500).json({ error: error.message });
