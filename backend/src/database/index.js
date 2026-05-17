@@ -1,29 +1,16 @@
-'use strict';
-const { Sequelize } = require('sequelize');
-const config = require('../config/database');
-
-const env = process.env.NODE_ENV || 'development';
-const dbConfig = config[env];
-
-const sequelize = new Sequelize(dbConfig.url, {
-  dialect: dbConfig.dialect,
-  dialectOptions: dbConfig.dialectOptions,
-  define: dbConfig.define,
-  logging: false,
-});
-
+const sequelize = require('../config/database');
 const User = require('../models/user');
-const Item = require('../models/Item');
-const Trade = require('../models/Trade');
+const Trade = require('../models/trade');
 
 User.init(sequelize);
-Item.init(sequelize);
 Trade.init(sequelize);
 
-const models = { User, Item, Trade };
+const models = { User, Trade };
 
 Object.values(models).forEach(model => {
   if (model.associate) model.associate(models);
 });
+
+sequelize.sync({ alter: true });
 
 module.exports = sequelize;
