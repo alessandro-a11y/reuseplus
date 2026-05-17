@@ -112,7 +112,7 @@ _includes() {
       {
         model: Item,
         as: 'item',
-        attributes: ['id', 'name', 'description']
+        attributes: ['id', 'titulo', 'descricao']
       }
     ];
   }
