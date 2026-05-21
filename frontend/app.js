@@ -37,7 +37,32 @@ app.get('/dashboard', (req, res) => {
 
 // ─────────────────────────────────────────────────────
 
+// Rota 404 — deve ficar antes do app.listen
+app.use((req, res) => {
+  res.status(404).render('errors/404');
+});
+
+// Rota 500
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).render('errors/500');
+});
+
+// ─────────────────────────────────────────────────────
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Frontend rodando em http://localhost:${PORT}`);
+});
+
+// Perfil
+app.get('/profile', (req, res) => {
+  res.render('profile/profile', { usuario: { nome: 'Davi', email: 'davi@email.com' } });
+});
+
+// ─────────────────────────────────────────────────────
+
+// Logout
+app.get('/logout', (req, res) => {
+  res.redirect('/login');
 });

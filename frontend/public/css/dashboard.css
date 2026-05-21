@@ -1,0 +1,51 @@
+/* Estilos complementares para o dashboard */
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+
+.sidebar nav a span {
+  font-size: 13px;
+}
+
+.content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1b4332;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #d8f3dc;
+  color: #1b4332;
+}
+
+.badge-warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-danger {
+  background: #ffe0e0;
+  color: #c0392b;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .welcome-box h2 {
+    font-size: 18px;
+  }
+}

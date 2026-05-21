@@ -1,0 +1,28 @@
+/* Estilos complementares para as páginas de autenticação */
+
+.auth-box .logo-text {
+  font-size: 13px;
+  color: #aaa;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.auth-box input::placeholder {
+  color: #bbb;
+}
+
+.auth-box input:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+  .auth-box {
+    margin: 16px;
+    padding: 28px 20px;
+  }
+}
