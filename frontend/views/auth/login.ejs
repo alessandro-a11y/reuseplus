@@ -1,37 +1,75 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — ReUsePlus</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
-  <div class="auth-container">
-    <div class="auth-box">
-      <h1>ReUsePlus</h1>
-      <p>Faça login para continuar</p>
-
-      <% if (erro) { %>
-        <div class="alert-error"><%= erro %></div>
-      <% } %>
-
-      <form action="/login" method="POST">
-        <div class="form-group">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+  <div class="auth-split">
+    <div class="auth-brand">
+      <div class="auth-brand-content">
+        <div class="auth-brand-logo">
+          <img src="/images/logo.png" alt="ReUsePlus" style="width: 200px; height: 200px; border-radius: 24px;">
         </div>
-        <div class="form-group">
-          <label for="senha">Senha</label>
-          <input type="password" id="senha" name="senha" placeholder="••••••••" required>
+        <h2>ReUsePlus</h2>
+        <p>Reutilize, troque e reaproveite materiais com quem está perto de você.</p>
+        <div class="auth-brand-features">
+          <div class="feature-item">
+            <i class="fas fa-recycle"></i>
+            <span>Sustentabilidade</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-exchange-alt"></i>
+            <span>Trocas simples</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-users"></i>
+            <span>Comunidade</span>
+          </div>
         </div>
-        <button type="submit" class="btn-primary">Entrar</button>
-      </form>
+      </div>
+    </div>
 
-      <div class="auth-link">
-        Não tem conta? <a href="/cadastro">Cadastre-se</a>
+    <div class="auth-form-side">
+      <div class="auth-box">
+        <h1>Bem-vindo de volta</h1>
+        <p>Entre na sua conta para continuar</p>
+
+        <% if (erro) { %>
+          <div class="alert-error">
+            <%= erro %>
+          </div>
+          <% } %>
+
+            <form action="/login" method="POST">
+              <div class="form-group">
+                <label for="email">E-mail</label>
+                <div class="input-icon">
+                  <i class="fas fa-envelope"></i>
+                  <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="senha">Senha</label>
+                <div class="input-icon">
+                  <i class="fas fa-lock"></i>
+                  <input type="password" id="senha" name="senha" placeholder="••••••••" required>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary">Entrar</button>
+            </form>
+
+            <div class="auth-link">
+              Não tem conta? <a href="/cadastro">Cadastre-se gratuitamente</a>
+            </div>
       </div>
     </div>
   </div>
 </body>
+
 </html>
