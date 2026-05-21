@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar') %>
+    <div class="main-content">
+      <%- include('../partials/navbar') %>
+      <div class="content">
+
+        <div class="welcome-box">
+          <h2>Olá, <%= usuario.nome %>! 👋</h2>
+          <p>Bem-vindo ao ReUsePlus — reutilize, troque e reaproveite materiais.</p>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <h3>Meus Itens</h3>
+            <p>0</p>
+          </div>
+          <div class="card">
+            <h3>Trocas Ativas</h3>
+            <p>0</p>
+          </div>
+          <div class="card">
+            <h3>Trocas Concluídas</h3>
+            <p>0</p>
+          </div>
+          <div class="card">
+            <h3>Itens Disponíveis</h3>
+            <p>0</p>
+          </div>
+        </div>
+
+        <%- include('../partials/footer') %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
