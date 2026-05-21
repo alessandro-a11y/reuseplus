@@ -1,9 +1,37 @@
-<aside class="sidebar">
-  <div class="logo">ReUsePlus</div>
+<aside class="sidebar" id="sidebar">
+<div class="logo">
+  <img src="/images/logo.png" alt="ReUsePlus" style="width: 120px; height: 120px; border-radius: 24px;">
+</div>
   <nav>
-    <a href="/dashboard" class="active">Dashboard</a>
-    <a href="/items">Meus Itens</a>
-    <a href="/trades">Trocas</a>
-    <a href="/profile">Perfil</a>
+    <a href="/dashboard" class="active">
+      <i class="fas fa-home"></i>
+      <span class="nav-text">Dashboard</span>
+    </a>
+    <a href="/items">
+      <i class="fas fa-box"></i>
+      <span class="nav-text">Meus Itens</span>
+    </a>
+    <a href="/trades">
+      <i class="fas fa-exchange-alt"></i>
+      <span class="nav-text">Trocas</span>
+    </a>
+    <a href="/profile">
+      <i class="fas fa-user"></i>
+      <span class="nav-text">Perfil</span>
+    </a>
   </nav>
+  <button class="sidebar-toggle" onclick="toggleSidebar()">&#8249;</button>
 </aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const main = document.querySelector('.main-content');
+    const btn = document.querySelector('.sidebar-toggle');
+    sidebar.classList.toggle('collapsed');
+    main.classList.toggle('expanded');
+    btn.innerHTML = sidebar.classList.contains('collapsed') ? '&#8250;' : '&#8249;';
+  }
+</script>
