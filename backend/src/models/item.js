@@ -27,10 +27,9 @@ const Item = sequelize.define('Item', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+}, {
+  tableName: 'items',
+  timestamps: true
 });
-
-Item.associate = (models) => {
-  Item.belongsTo(models.User, { foreignKey: 'userId' });
-};
 
 module.exports = Item;
