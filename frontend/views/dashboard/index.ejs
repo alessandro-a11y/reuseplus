@@ -5,36 +5,221 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — ReUsePlus</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <div class="layout">
     <%- include('../partials/sidebar') %>
-    <div class="main-content">
-      <%- include('../partials/navbar') %>
+
+    <div class="main-content" id="main-content">
+
+      <nav class="navbar">
+        <span class="page-title">Olá, <%= usuario.nome %>!</span>
+        <div class="navbar-right">
+          
+          <button class="notif-btn" aria-label="Notificações">
+            <i class="fas fa-bell"></i>
+            <span class="dot"></span>
+          </button>
+          
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+            <i class="fas fa-chevron-down user-chip-arrow"></i>
+          </div>
+          
+          <a href="/logout" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Sair
+          </a>
+        </div>
+      </nav>
+
       <div class="content">
 
         <div class="welcome-box">
-          <h2>Olá, <%= usuario.nome %>!</h2>
-          <p>Bem-vindo ao ReUsePlus — reutilize, troque e reaproveite materiais.</p>
+          <div class="welcome-left">
+            <h2>Olá, <%= usuario.nome %>!</h2>
+            <p>Bem-vindo ao ReUsePlus — reutilize, troque e reaproveite materiais.</p>
+          </div>
+          
+          <div class="welcome-stats">
+            <div class="welcome-stat">
+              <div class="stat-icon"><i class="fas fa-leaf"></i></div>
+              <div class="stat-label">Impacto positivo</div>
+              <div class="stat-value">0 <span class="stat-unit">kg</span></div>
+              <div class="stat-sub">de CO₂ evitado</div>
+            </div>
+            <div class="welcome-stat">
+              <div class="stat-icon"><i class="fas fa-arrows-rotate"></i></div>
+              <div class="stat-label">Sua contribuição</div>
+              <div class="stat-value">0 <span class="stat-unit">trocas</span></div>
+              <div class="stat-sub">realizadas</div>
+            </div>
+          </div>
         </div>
 
         <div class="cards">
+          
           <div class="card">
-            <h3>Meus Itens</h3>
-            <p>0</p>
+            <div class="card-top">
+              <h3>Meus Itens</h3>
+              <div class="card-icon"><i class="fas fa-box"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">cadastrados</div>
+            <a href="/items" class="card-link">Ver meus itens <i class="fas fa-arrow-right"></i></a>
           </div>
+          
           <div class="card">
-            <h3>Trocas Ativas</h3>
-            <p>0</p>
+            <div class="card-top">
+              <h3>Trocas Ativas</h3>
+              <div class="card-icon"><i class="fas fa-arrows-rotate"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">em andamento</div>
+            <a href="/trades" class="card-link">Ver trocas <i class="fas fa-arrow-right"></i></a>
           </div>
+          
           <div class="card">
-            <h3>Trocas Concluídas</h3>
-            <p>0</p>
+            <div class="card-top">
+              <h3>Trocas Concluídas</h3>
+              <div class="card-icon"><i class="fas fa-circle-check"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">concluídas</div>
+            <a href="/trades/history" class="card-link">Ver histórico <i class="fas fa-arrow-right"></i></a>
           </div>
+          
           <div class="card">
-            <h3>Itens Disponíveis</h3>
-            <p>0</p>
+            <div class="card-top">
+              <h3>Itens Disponíveis</h3>
+              <div class="card-icon"><i class="fas fa-bag-shopping"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">disponíveis</div>
+            <a href="/items/list" class="card-link">Explorar itens <i class="fas fa-arrow-right"></i></a>
           </div>
+        </div>
+
+        <div class="bottom-grid">
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Resumo de Atividades</h3>
+                <div class="panel-sub">Acompanhe sua evolução na plataforma</div>
+              </div>
+              <span class="badge-timeline">Últimos 7 dias</span>
+            </div>
+
+            <div class="chart-area">
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">16/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">17/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">18/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">19/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">20/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">21/05</span></div>
+              <div class="chart-bar" style="height: 6px;"><span class="bar-label">22/05</span></div>
+            </div>
+
+            <div class="stats-mini">
+              <div class="stat-mini">
+                <i class="fas fa-eye"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Visualizações</span>
+                  <span class="mini-value">0</span>
+                </div>
+              </div>
+              <div class="stat-mini">
+                <i class="fas fa-user-friends"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Contatos</span>
+                  <span class="mini-value">0</span>
+                </div>
+              </div>
+              <div class="stat-mini">
+                <i class="fas fa-comment"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Mensagens</span>
+                  <span class="mini-value">0</span>
+                </div>
+              </div>
+              <div class="stat-mini">
+                <i class="fas fa-star"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Avaliações</span>
+                  <span class="mini-value">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Atividades Recentes</h3>
+                <div class="panel-sub">Veja o que aconteceu recentemente</div>
+              </div>
+              <a href="#">Ver todas</a>
+            </div>
+            
+            <div class="empty-state">
+              <p>Nenhuma atividade recente</p>
+              <span>Suas atividades aparecerão aqui.</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <h3>Dicas Sustentáveis</h3>
+            </div>
+            
+            <div class="tips-list">
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-recycle"></i></div>
+                <div class="tip-text">
+                  <strong>Reutilize</strong>
+                  <span>Dê uma nova vida aos itens</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+              
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-cart-shopping"></i></div>
+                <div class="tip-text">
+                  <strong>Reduza</strong>
+                  <span>Consuma de forma consciente</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+              
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-trash-can"></i></div>
+                <div class="tip-text">
+                  <strong>Recicle</strong>
+                  <span>Separe materiais recicláveis</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+              
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-handshake"></i></div>
+                <div class="tip-text">
+                  <strong>Compartilhe</strong>
+                  <span>Incentive a troca e a comunidade</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+
+            <div class="invite-banner">
+              <h4>Convide amigos</h4>
+              <p>Quanto mais, melhor!<br>Convide amigos e faça parte de uma comunidade mais sustentável.</p>
+              <button class="btn-invite">Convidar agora</button>
+            </div>
+          </div>
+
         </div>
 
         <%- include('../partials/footer') %>
