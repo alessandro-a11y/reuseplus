@@ -1,12 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-<<<<<<< HEAD
-require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
-=======
-require('dotenv').config();
 
->>>>>>> 544cd7d (feat: integração JWT, model Item atualizado, rotas testadas e regras de negócio validadas)
+require('dotenv').config({ path: require('path').resolve(__dirname, '../../.env') });
+
 const tradeRoutes = require('./routes/tradeRoutes');
 const authRoutes = require('./routes/authRoutes');
 require('./database');
