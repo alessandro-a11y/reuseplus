@@ -94,7 +94,7 @@ class TradeService {
   }
 
 _includes() {
-    const { User } = require('../database').models;
+    const { User, Item } = require('../database').models;
     return [
       {
         model: User,
@@ -105,6 +105,11 @@ _includes() {
         model: User,
         as: 'receiver',
         attributes: ['id', 'nome', 'email']
+      },
+      {
+        model: Item,
+        as: 'item',
+        attributes: ['id', 'titulo', 'descricao', 'categoria', 'status']
       }
     ];
   }

@@ -3,13 +3,18 @@ const { Model, DataTypes } = require('sequelize');
 class Item extends Model {
   static init(sequelize) {
     super.init({
-      name: DataTypes.STRING,
-      description: DataTypes.TEXT,
-      user_id: DataTypes.INTEGER,
+      titulo: DataTypes.STRING,
+      descricao: DataTypes.TEXT,
+      categoria: DataTypes.STRING,
+      status: {
+        type: DataTypes.STRING,
+        defaultValue: 'disponivel'
+      },
+      userId: DataTypes.INTEGER
     }, {
       sequelize,
       tableName: 'items',
-      underscored: true,
+      underscored: false,
     });
   }
 
