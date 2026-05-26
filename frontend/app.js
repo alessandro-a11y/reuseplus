@@ -2,14 +2,17 @@ const express = require('express');
 const path = require('path');
 const axios = require('axios');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 const app = express();
 
 const BACKEND_URL = 'http://localhost:3001/api';
 
+// Configurações do View Engine (EJS)
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Middlewares
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -22,11 +25,17 @@ const autenticar = (req, res, next) => {
   next();
 };
 
-// Redireciona raiz para login
-app.get('/', (req, res) => res.redirect('/login'));
+// ── Rota Raiz ──
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
 
-// Tela de login
-app.get('/login', (req, res) => res.render('auth/login', { erro: null }));
+// ── Rotas de Autenticação ──
+
+// Renderizar página de Login
+app.get('/login', (req, res) => {
+  res.render('auth/login', { erro: null });
+});
 
 // POST login — chama API do backend
 app.post('/login', async (req, res) => {
@@ -35,7 +44,6 @@ app.post('/login', async (req, res) => {
     const resposta = await axios.post(`${BACKEND_URL}/auth/login`, { email, senha });
     const { token, user } = resposta.data;
 
-    // Salva o token em cookie
     res.cookie('token', token, { httpOnly: true });
     res.cookie('usuario_nome', user.nome);
 
@@ -46,11 +54,13 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Tela de cadastro
-app.get('/cadastro', (req, res) => res.render('auth/register', { erro: null }));
+// Renderizar página de Cadastro
+app.get('/register', (req, res) => {
+  res.render('auth/register', { erro: null });
+});
 
 // POST cadastro — chama API do backend
-app.post('/cadastro', async (req, res) => {
+app.post('/register', async (req, res) => {
   try {
     const { nome, email, senha } = req.body;
     await axios.post(`${BACKEND_URL}/auth/register`, { nome, email, senha });
@@ -61,33 +71,41 @@ app.post('/cadastro', async (req, res) => {
   }
 });
 
-// Dashboard — protegido
+// ── Outras Rotas do Sistema ──
+
 app.get('/dashboard', autenticar, (req, res) => {
   const nome = req.cookies.usuario_nome || 'Usuário';
   res.render('dashboard/index', { usuario: { nome } });
 });
 
-// Perfil — protegido
 app.get('/profile', autenticar, (req, res) => {
   const nome = req.cookies.usuario_nome || 'Usuário';
   res.render('profile/profile', { usuario: { nome, email: '' } });
 });
 
-// Logout — limpa o cookie e redireciona
 app.get('/logout', (req, res) => {
   res.clearCookie('token');
   res.clearCookie('usuario_nome');
   res.redirect('/login');
 });
 
-// 404
-app.use((req, res) => res.status(404).render('errors/404'));
+// ── Tratamento de Erros ──
 
-// 500
+// 404 - Página Não Encontrada
+app.use((req, res) => {
+  res.status(404).render('errors/404');
+});
+
+// 500 - Erro Interno do Servidor
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).render('errors/500');
 });
 
+// Inicialização do Servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Servidor rodando com sucesso na porta ${PORT}`);
+});
+
+module.exports = app;
