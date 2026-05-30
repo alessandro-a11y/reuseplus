@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Item — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'items', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Detalhes do Item</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="bottom-grid">
+
+          <div class="panel">
+            <div class="item-image-placeholder">
+              <i class="fas fa-image"></i>
+              <span>Sem imagem</span>
+            </div>
+            <div class="item-detail-info">
+              <div class="item-status-badge disponivel">Disponível</div>
+              <h2 class="item-detail-title">Nome do Item</h2>
+              <p class="item-detail-desc">Descrição do item aparecerá aqui após integração com o backend.</p>
+              <div class="item-meta">
+                <span><i class="fas fa-tag"></i> Categoria</span>
+                <span><i class="fas fa-user"></i> Proprietário</span>
+                <span><i class="fas fa-calendar"></i> Data</span>
+              </div>
+            </div>
+            <div class="item-actions">
+              <a href="/trades/request" class="btn-invite" style="text-decoration:none; justify-content:center;">
+                <i class="fas fa-arrows-rotate"></i> Solicitar Troca
+              </a>
+              <button class="btn-secondary">
+                <i class="fas fa-heart"></i> Favoritar
+              </button>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Sobre o Proprietário</h3>
+                <div class="panel-sub">Informações de quem cadastrou o item</div>
+              </div>
+            </div>
+            <div class="owner-card">
+              <div class="avatar" style="width:48px; height:48px; font-size:18px;">U</div>
+              <div>
+                <strong>Usuário</strong>
+                <div class="stars-row" style="font-size:13px;">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <span style="color: var(--text-muted); margin-left:4px;">5.0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-header" style="margin-top:24px;">
+              <div>
+                <h3>Itens Similares</h3>
+                <div class="panel-sub">Você também pode gostar</div>
+              </div>
+            </div>
+            <div class="empty-state" style="padding: 24px 0;">
+              <i class="fas fa-box" style="font-size:32px; color:#d8f3dc; margin-bottom:10px;"></i>
+              <p style="font-size:14px;">Nenhum item similar</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

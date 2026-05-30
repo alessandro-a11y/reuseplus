@@ -1,0 +1,75 @@
+<aside class="sidebar" id="sidebar">
+
+  <div class="sidebar-header">
+    <div class="logo">
+      <img src="/images/logo.png" alt="ReUsePlus Logo">
+      <span class="logo-text">ReUse<span>+</span></span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="nav-item <%= typeof page !== 'undefined' && page === 'dashboard' ? 'active' : '' %>">
+      <i class="fas fa-house"></i>
+      <span class="nav-text">Dashboard</span>
+    </a>
+
+    <a href="/items" class="nav-item <%= typeof page !== 'undefined' && page === 'items' ? 'active' : '' %>">
+      <i class="fas fa-box"></i>
+      <span class="nav-text">Meus Itens</span>
+    </a>
+
+    <a href="/trades" class="nav-item <%= typeof page !== 'undefined' && page === 'trades' ? 'active' : '' %>">
+      <i class="fas fa-arrows-rotate"></i>
+      <span class="nav-text">Trocas</span>
+    </a>
+
+    <a href="/favorites" class="nav-item <%= typeof page !== 'undefined' && page === 'favorites' ? 'active' : '' %>">
+      <i class="fas fa-heart"></i>
+      <span class="nav-text">Favoritos</span>
+    </a>
+
+    <a href="/messages" class="nav-item <%= typeof page !== 'undefined' && page === 'messages' ? 'active' : '' %>">
+      <i class="fas fa-comment-dots"></i>
+      <span class="nav-text">Mensagens</span>
+      <span class="nav-badge">3</span>
+    </a>
+
+    <a href="/ratings" class="nav-item <%= typeof page !== 'undefined' && page === 'ratings' ? 'active' : '' %>">
+      <i class="fas fa-star"></i>
+      <span class="nav-text">Avaliações</span>
+    </a>
+
+    <a href="/impact" class="nav-item <%= typeof page !== 'undefined' && page === 'impact' ? 'active' : '' %>">
+      <i class="fas fa-leaf"></i>
+      <span class="nav-text">Impacto Ambiental</span>
+    </a>
+
+    <a href="/profile" class="nav-item <%= typeof page !== 'undefined' && page === 'profile' ? 'active' : '' %>">
+      <i class="fas fa-user"></i>
+      <span class="nav-text">Perfil</span>
+    </a>
+
+    <a href="/settings" class="nav-item <%= typeof page !== 'undefined' && page === 'settings' ? 'active' : '' %>">
+      <i class="fas fa-gear"></i>
+      <span class="nav-text">Configurações</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-user">
+    <div class="s-avatar">
+      <%= typeof usuario !== 'undefined' ? usuario.nome.charAt(0).toUpperCase() : 'U' %>
+    </div>
+    <div class="s-user-info">
+      <span class="s-user-name"><%= typeof usuario !== 'undefined' ? usuario.nome : 'Usuário' %></span>
+      <span class="s-user-role">Membro</span>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <a href="/logout" class="logout-item">
+      <i class="fas fa-sign-out-alt"></i>
+      <span class="nav-text">Sair</span>
+    </a>
+  </div>
+
+</aside>

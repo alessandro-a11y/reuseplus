@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favoritos — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'favorites', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Favoritos</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Itens Favoritos</h3>
+              <div class="panel-sub">Itens que você salvou para ver depois</div>
+            </div>
+          </div>
+          <div class="favorites-grid" id="favorites-grid">
+            <div class="empty-state">
+              <i class="fas fa-heart" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+              <p>Nenhum favorito ainda</p>
+              <span>Explore itens e salve os que mais gostar.</span>
+              <a href="/items" class="card-link" style="margin-top:16px;">Explorar itens <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

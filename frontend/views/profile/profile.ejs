@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar') %>
+    <div class="main-content">
+      <%- include('../partials/navbar') %>
+      <div class="content">
+        <h2>Meu Perfil</h2>
+
+        <div class="auth-box" style="max-width: 500px;">
+          <div class="form-group">
+            <label>Nome</label>
+            <input type="text" value="<%= usuario.nome %>" disabled>
+          </div>
+          <div class="form-group">
+            <label>E-mail</label>
+            <input type="email" value="<%= usuario.email || '' %>" disabled>
+          </div>
+          <p style="font-size:13px; color:#aaa; margin-top:12px;">
+            Edição de perfil será disponibilizada em breve.
+          </p>
+        </div>
+
+        <%- include('../partials/footer') %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

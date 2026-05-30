@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trocas — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'trades', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Trocas</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="trades-tabs">
+          <a href="/trades" class="trade-tab active">Ativas</a>
+          <a href="/trades/history" class="trade-tab">Histórico</a>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Trocas Ativas</h3>
+              <div class="panel-sub">Solicitações enviadas e recebidas</div>
+            </div>
+          </div>
+
+          <div class="trades-filter">
+            <button class="filter-btn active">Todas</button>
+            <button class="filter-btn">Recebidas</button>
+            <button class="filter-btn">Enviadas</button>
+            <button class="filter-btn">Pendentes</button>
+          </div>
+
+          <div class="empty-state">
+            <i class="fas fa-arrows-rotate" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+            <p>Nenhuma troca ativa</p>
+            <span>Explore itens e solicite sua primeira troca.</span>
+            <a href="/items" class="card-link" style="margin-top:16px;">
+              Explorar itens <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'settings', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Configurações</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="bottom-grid">
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Conta</h3>
+                <div class="panel-sub">Gerencie suas informações pessoais</div>
+              </div>
+            </div>
+            <div class="settings-list">
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-user"></i>
+                  <div>
+                    <strong>Nome</strong>
+                    <span><%= usuario.nome %></span>
+                  </div>
+                </div>
+                <a href="/profile" class="card-link">Editar <i class="fas fa-arrow-right"></i></a>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-envelope"></i>
+                  <div>
+                    <strong>E-mail</strong>
+                    <span><%= usuario.email || 'Não informado' %></span>
+                  </div>
+                </div>
+                <a href="/profile" class="card-link">Editar <i class="fas fa-arrow-right"></i></a>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-lock"></i>
+                  <div>
+                    <strong>Senha</strong>
+                    <span>••••••••</span>
+                  </div>
+                </div>
+                <a href="/profile" class="card-link">Alterar <i class="fas fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Notificações</h3>
+                <div class="panel-sub">Controle o que você recebe</div>
+              </div>
+            </div>
+            <div class="settings-list">
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-arrows-rotate"></i>
+                  <div>
+                    <strong>Novas trocas</strong>
+                    <span>Receba alertas de solicitações</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-comment-dots"></i>
+                  <div>
+                    <strong>Mensagens</strong>
+                    <span>Alertas de novas mensagens</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-star"></i>
+                  <div>
+                    <strong>Avaliações</strong>
+                    <span>Quando receber uma avaliação</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-envelope"></i>
+                  <div>
+                    <strong>E-mails</strong>
+                    <span>Newsletter e atualizações</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Privacidade</h3>
+                <div class="panel-sub">Controle sua visibilidade</div>
+              </div>
+            </div>
+            <div class="settings-list">
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-eye"></i>
+                  <div>
+                    <strong>Perfil público</strong>
+                    <span>Outros usuários podem ver seu perfil</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <div>
+                    <strong>Mostrar localização</strong>
+                    <span>Exibir cidade no perfil</span>
+                  </div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="panel-header" style="margin-top: 24px;">
+              <div>
+                <h3>Zona de Perigo</h3>
+                <div class="panel-sub">Ações irreversíveis</div>
+              </div>
+            </div>
+            <div class="settings-list">
+              <div class="settings-item">
+                <div class="settings-item-left">
+                  <i class="fas fa-trash" style="color: var(--danger-color);"></i>
+                  <div>
+                    <strong style="color: var(--danger-color);">Deletar conta</strong>
+                    <span>Remove permanentemente sua conta e dados</span>
+                  </div>
+                </div>
+                <button class="btn-danger">Deletar</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
