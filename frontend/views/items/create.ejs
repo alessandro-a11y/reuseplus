@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo Item — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'items', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Novo Item</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="panel" style="max-width: 700px;">
+          <div class="panel-header">
+            <div>
+              <h3>Cadastrar Novo Item</h3>
+              <div class="panel-sub">Preencha as informações do item que deseja trocar ou doar</div>
+            </div>
+            <a href="/items" class="card-link"><i class="fas fa-arrow-left"></i> Voltar</a>
+          </div>
+
+          <form action="/items" method="POST" class="item-form">
+            <div class="form-group">
+              <label>Título do item</label>
+              <input type="text" name="titulo" placeholder="Ex: Bicicleta aro 29" required>
+            </div>
+            <div class="form-group">
+              <label>Descrição</label>
+              <textarea name="descricao" rows="4" placeholder="Descreva o estado, tamanho, cor..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Categoria</label>
+                <select name="categoria">
+                  <option value="">Selecione...</option>
+                  <option value="Eletronicos">Eletrônicos</option>
+                  <option value="Moveis">Móveis</option>
+                  <option value="Roupas">Roupas</option>
+                  <option value="Esporte">Esporte</option>
+                  <option value="Livros">Livros</option>
+                  <option value="Brinquedos">Brinquedos</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                  <option value="disponivel">Disponível para troca</option>
+                  <option value="doacao">Doação</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-invite" style="width:100%; justify-content:center;">
+              <i class="fas fa-check"></i> Cadastrar Item
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

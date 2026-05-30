@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Itens — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'items', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Meus Itens</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Meus Itens</h3>
+              <div class="panel-sub">Gerencie os itens que você cadastrou</div>
+            </div>
+            <a href="/items/create" class="btn-invite" style="text-decoration:none;">
+              <i class="fas fa-plus"></i> Novo Item
+            </a>
+          </div>
+
+          <div class="items-filter">
+            <button class="filter-btn active">Todos</button>
+            <button class="filter-btn">Disponível</button>
+            <button class="filter-btn">Em negociação</button>
+            <button class="filter-btn">Doação</button>
+          </div>
+
+          <div class="empty-state">
+            <i class="fas fa-box" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+            <p>Nenhum item cadastrado</p>
+            <span>Cadastre seu primeiro item para começar a trocar.</span>
+            <a href="/items/create" class="card-link" style="margin-top:16px;">
+              Cadastrar item <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
