@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mensagens — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'messages', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Mensagens</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="messages-layout">
+
+          <div class="panel messages-list">
+            <div class="panel-header">
+              <div>
+                <h3>Conversas</h3>
+                <div class="panel-sub">Suas mensagens com outros usuários</div>
+              </div>
+            </div>
+            <div class="search-bar">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Buscar conversa...">
+            </div>
+            <div class="empty-state" style="padding: 40px 0;">
+              <i class="fas fa-comment-dots" style="font-size:36px; color:#d8f3dc; margin-bottom:12px;"></i>
+              <p>Nenhuma conversa ainda</p>
+              <span>Inicie uma troca para começar a conversar.</span>
+            </div>
+          </div>
+
+          <div class="panel messages-chat">
+            <div class="chat-placeholder">
+              <i class="fas fa-comments"></i>
+              <p>Selecione uma conversa</p>
+              <span>Escolha uma conversa ao lado para começar.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

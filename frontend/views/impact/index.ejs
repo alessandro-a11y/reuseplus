@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impacto Ambiental — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'impact', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Impacto Ambiental</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="cards">
+          <div class="card">
+            <div class="card-top">
+              <h3>CO₂ Evitado</h3>
+              <div class="card-icon"><i class="fas fa-cloud"></i></div>
+            </div>
+            <div class="card-number">0 <span style="font-size:18px;">kg</span></div>
+            <div class="card-sub">de emissões evitadas</div>
+          </div>
+          <div class="card">
+            <div class="card-top">
+              <h3>Itens Reutilizados</h3>
+              <div class="card-icon"><i class="fas fa-recycle"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">itens que ganharam nova vida</div>
+          </div>
+          <div class="card">
+            <div class="card-top">
+              <h3>Trocas Realizadas</h3>
+              <div class="card-icon"><i class="fas fa-arrows-rotate"></i></div>
+            </div>
+            <div class="card-number">0</div>
+            <div class="card-sub">trocas concluídas</div>
+          </div>
+          <div class="card">
+            <div class="card-top">
+              <h3>Água Economizada</h3>
+              <div class="card-icon"><i class="fas fa-droplet"></i></div>
+            </div>
+            <div class="card-number">0 <span style="font-size:18px;">L</span></div>
+            <div class="card-sub">litros preservados</div>
+          </div>
+        </div>
+
+        <div class="bottom-grid">
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Sua Jornada Sustentável</h3>
+                <div class="panel-sub">Acompanhe sua evolução ao longo do tempo</div>
+              </div>
+              <span class="badge-timeline">Últimos 30 dias</span>
+            </div>
+            <div class="chart-area">
+              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 1</span></div>
+              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 2</span></div>
+              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 3</span></div>
+              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 4</span></div>
+            </div>
+            <div class="stats-mini">
+              <div class="stat-mini">
+                <i class="fas fa-leaf"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Melhor semana</span>
+                  <span class="mini-value">0 kg</span>
+                </div>
+              </div>
+              <div class="stat-mini">
+                <i class="fas fa-trophy"></i>
+                <div class="mini-info">
+                  <span class="mini-label">Meta mensal</span>
+                  <span class="mini-value">0%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Conquistas</h3>
+                <div class="panel-sub">Badges que você desbloqueou</div>
+              </div>
+            </div>
+            <div class="achievements-grid">
+              <div class="achievement locked">
+                <i class="fas fa-seedling"></i>
+                <span>Primeira Troca</span>
+              </div>
+              <div class="achievement locked">
+                <i class="fas fa-recycle"></i>
+                <span>Reciclador</span>
+              </div>
+              <div class="achievement locked">
+                <i class="fas fa-leaf"></i>
+                <span>Eco Warrior</span>
+              </div>
+              <div class="achievement locked">
+                <i class="fas fa-earth-americas"></i>
+                <span>Guardião</span>
+              </div>
+              <div class="achievement locked">
+                <i class="fas fa-star"></i>
+                <span>5 Estrelas</span>
+              </div>
+              <div class="achievement locked">
+                <i class="fas fa-fire"></i>
+                <span>Em Chamas</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Dicas para Aumentar seu Impacto</h3>
+              </div>
+            </div>
+            <div class="tips-list">
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-box"></i></div>
+                <div class="tip-text">
+                  <strong>Cadastre mais itens</strong>
+                  <span>Cada item cadastrado aumenta suas chances de troca</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-handshake"></i></div>
+                <div class="tip-text">
+                  <strong>Conclua trocas</strong>
+                  <span>Trocas concluídas geram impacto real no meio ambiente</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+              <div class="tip-item">
+                <div class="tip-ic"><i class="fas fa-users"></i></div>
+                <div class="tip-text">
+                  <strong>Convide amigos</strong>
+                  <span>Mais usuários significa mais trocas e mais impacto</span>
+                </div>
+                <i class="fas fa-chevron-right"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

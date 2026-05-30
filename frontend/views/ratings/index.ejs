@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avaliações — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'ratings', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Avaliações</span>
+        <div class="navbar-right">
+          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="ratings-summary">
+          <div class="panel rating-score-card">
+            <div class="score-big">5.0</div>
+            <div class="stars-row">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <div class="score-label">Sua avaliação média</div>
+            <div class="score-count">0 avaliações recebidas</div>
+          </div>
+
+          <div class="panel rating-bars-card">
+            <div class="panel-header">
+              <h3>Distribuição</h3>
+            </div>
+            <div class="rating-bar-row">
+              <span>5 <i class="fas fa-star"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
+              <span>0</span>
+            </div>
+            <div class="rating-bar-row">
+              <span>4 <i class="fas fa-star"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
+              <span>0</span>
+            </div>
+            <div class="rating-bar-row">
+              <span>3 <i class="fas fa-star"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
+              <span>0</span>
+            </div>
+            <div class="rating-bar-row">
+              <span>2 <i class="fas fa-star"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
+              <span>0</span>
+            </div>
+            <div class="rating-bar-row">
+              <span>1 <i class="fas fa-star"></i></span>
+              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
+              <span>0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Avaliações Recebidas</h3>
+              <div class="panel-sub">O que outros usuários dizem sobre você</div>
+            </div>
+          </div>
+          <div class="empty-state">
+            <i class="fas fa-star" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+            <p>Nenhuma avaliação ainda</p>
+            <span>Complete trocas para receber avaliações.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
