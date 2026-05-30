@@ -4,15 +4,22 @@ const helmet = require('helmet');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const itemRoutes = require('./routes/itemRoutes');
+const tradeRoutes = require('./routes/tradeRoutes');
 
 const app = express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api/trades', tradeRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', mensagem: 'ReUse+ API funcionando' });
