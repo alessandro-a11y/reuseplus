@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: '', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Perfil do Usuário</span>
+        <div class="navbar-right">
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="bottom-grid">
+
+          <div class="panel" style="grid-column: span 1;">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar" id="dono-avatar">?</div>
+              <div class="profile-name" id="dono-nome">Carregando...</div>
+              <div class="profile-badge">
+                <i class="fas fa-leaf"></i> Membro ReUsePlus
+              </div>
+            </div>
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <span id="ps-itens">-</span>
+                <label>Itens</label>
+              </div>
+              <div class="profile-stat">
+                <span>5.0</span>
+                <label>Avaliação</label>
+              </div>
+              <div class="profile-stat">
+                <span id="ps-trocas">-</span>
+                <label>Trocas</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel" style="grid-column: span 2;">
+            <div class="panel-header">
+              <div>
+                <h3>Itens Disponíveis</h3>
+                <div class="panel-sub">Itens que este usuário quer trocar</div>
+              </div>
+            </div>
+
+            <div id="loading" style="text-align:center; padding:32px; color:#aaa;">
+              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            </div>
+
+            <div id="items-grid" class="items-grid" style="display:none;"></div>
+
+            <div id="empty-state" class="empty-state" style="display:none;">
+              <i class="fas fa-box" style="font-size:36px; color:#d8f3dc; margin-bottom:10px;"></i>
+              <p>Nenhum item disponível</p>
+              <span>Este usuário ainda não cadastrou itens.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const donoId = <%= dono.id %>;
+
+    const estadoLabel = { novo: 'Novo', usado: 'Usado', danificado: 'Danificado' };
+    const estadoCor   = { novo: '#5db87a', usado: '#e0a055', danificado: '#e05555' };
+
+    async function carregarPerfil() {
+      try {
+        const res = await fetch(`/api/items?usuario_id=${donoId}`);
+        const itens = res.ok ? await res.json() : [];
+
+        const donoItens = itens.filter(i => i.usuario_id === donoId);
+
+        document.getElementById('dono-avatar').textContent = '<%= dono.nome.charAt(0).toUpperCase() %>';
+        document.getElementById('dono-nome').textContent   = '<%= dono.nome %>';
+        document.getElementById('ps-itens').textContent    = donoItens.length;
+        document.getElementById('ps-trocas').textContent   = '0';
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (donoItens.length === 0) {
+          document.getElementById('empty-state').style.display = 'flex';
+          return;
+        }
+
+        const grid = document.getElementById('items-grid');
+        grid.style.display = 'grid';
+        grid.innerHTML = donoItens.map(item => `
+          <div class="item-card">
+            <div class="item-card-img">
+              ${item.imagem_url
+                ? `<img src="${item.imagem_url}" alt="${item.titulo}">`
+                : `<i class="fas fa-image" style="font-size:36px;color:#b0c4b1;"></i>`}
+            </div>
+            <div class="item-card-body">
+              <div class="item-card-title">${item.titulo}</div>
+              <div class="item-card-meta">
+                <span style="color:${estadoCor[item.estado] || '#888'}">
+                  ● ${estadoLabel[item.estado] || item.estado || 'N/A'}
+                </span>
+              </div>
+              ${item.descricao ? `<div class="item-card-desc">${item.descricao}</div>` : ''}
+              <div class="item-card-actions">
+                <a href="/items/${item.id}" class="btn-sm">Ver detalhes</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
+      }
+    }
+
+    carregarPerfil();
+  </script>
+</body>
+</html>

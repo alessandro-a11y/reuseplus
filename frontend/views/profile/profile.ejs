@@ -4,34 +4,197 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Perfil — ReUsePlus</title>
-  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
   <div class="layout">
-    <%- include('../partials/sidebar') %>
+    <%- include('../partials/sidebar', { page: 'profile', usuario: usuario }) %>
     <div class="main-content">
-      <%- include('../partials/navbar') %>
-      <div class="content">
-        <h2>Meu Perfil</h2>
-
-        <div class="auth-box" style="max-width: 500px;">
-          <div class="form-group">
-            <label>Nome</label>
-            <input type="text" value="<%= usuario.nome %>" disabled>
+      <nav class="navbar">
+        <span class="page-title">Meu Perfil</span>
+        <div class="navbar-right">
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
+          <div class="user-chip">
+            <div class="avatar" id="navbar-avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span id="navbar-nome"><%= usuario.nome %></span>
           </div>
-          <div class="form-group">
-            <label>E-mail</label>
-            <input type="email" value="<%= usuario.email || '' %>" disabled>
-          </div>
-          <p style="font-size:13px; color:#aaa; margin-top:12px;">
-            Edição de perfil será disponibilizada em breve.
-          </p>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
+      </nav>
 
-        <%- include('../partials/footer') %>
+      <div class="content">
+        <div class="bottom-grid">
+
+          <!-- Card lateral: avatar + stats -->
+          <div class="panel" style="grid-column: span 1;">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar" id="perfil-avatar">
+                <%= usuario.nome.charAt(0).toUpperCase() %>
+              </div>
+              <div class="profile-name" id="perfil-nome"><%= usuario.nome %></div>
+              <div class="profile-email" id="perfil-email"><%= usuario.email || '' %></div>
+              <div class="profile-badge">
+                <i class="fas fa-leaf"></i> Membro ReUsePlus
+              </div>
+            </div>
+
+            <div class="profile-stats">
+              <div class="profile-stat">
+                <span id="ps-itens">-</span>
+                <label>Itens</label>
+              </div>
+              <div class="profile-stat">
+                <span id="ps-trocas">-</span>
+                <label>Trocas</label>
+              </div>
+              <div class="profile-stat">
+                <span>5.0</span>
+                <label>Avaliação</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulário de edição -->
+          <div class="panel" style="grid-column: span 2;">
+            <div class="panel-header">
+              <div>
+                <h3>Informações Pessoais</h3>
+                <div class="panel-sub">Atualize seus dados de perfil</div>
+              </div>
+            </div>
+
+            <div id="msg-sucesso" style="display:none; background:#d8f3dc; color:#1b4332; padding:10px 14px; border-radius:10px; margin-bottom:16px; font-size:14px;">
+              <i class="fas fa-check-circle"></i> Perfil atualizado com sucesso!
+            </div>
+            <div id="msg-erro" style="display:none; background:#fff0f0; color:#c0392b; padding:10px 14px; border-radius:10px; margin-bottom:16px; font-size:14px;"></div>
+
+            <form class="item-form" id="form-perfil">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Nome completo</label>
+                  <input type="text" name="nome" id="input-nome" value="<%= usuario.nome %>" required>
+                </div>
+                <div class="form-group">
+                  <label>E-mail</label>
+                  <input type="email" name="email" id="input-email" value="<%= usuario.email || '' %>" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Nova senha <span style="color:#aaa; font-weight:400;">(deixe vazio para não alterar)</span></label>
+                <input type="password" name="senha" id="input-senha" placeholder="••••••••">
+              </div>
+              <button type="submit" class="btn-invite" style="width:fit-content;">
+                <i class="fas fa-check"></i> Salvar alterações
+              </button>
+            </form>
+
+            <!-- Zona de perigo -->
+            <div class="panel-header" style="margin-top:32px; border-top:1px solid var(--border-color); padding-top:24px;">
+              <div>
+                <h3>Zona de Perigo</h3>
+                <div class="panel-sub">Ações irreversíveis na sua conta</div>
+              </div>
+            </div>
+            <button class="btn-danger" onclick="deletarConta()">
+              <i class="fas fa-trash"></i> Deletar minha conta
+            </button>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
+
+  <script>
+    async function carregarStats() {
+      try {
+        const [resItens, resTrocas] = await Promise.all([
+          fetch('/api/items/meus'),
+          fetch('/api/trades')
+        ]);
+        const itens  = resItens.ok  ? await resItens.json()  : [];
+        const trocas = resTrocas.ok ? await resTrocas.json() : [];
+        document.getElementById('ps-itens').textContent  = itens.length;
+        document.getElementById('ps-trocas').textContent = trocas.length;
+      } catch (_) {}
+    }
+
+    document.getElementById('form-perfil').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome  = document.getElementById('input-nome').value.trim();
+      const email = document.getElementById('input-email').value.trim();
+      const senha = document.getElementById('input-senha').value;
+
+      const body = { nome, email };
+      if (senha) body.senha = senha;
+
+      // Esconde mensagens anteriores
+      document.getElementById('msg-sucesso').style.display = 'none';
+      document.getElementById('msg-erro').style.display    = 'none';
+
+      try {
+        const res = await fetch('/api/auth/users/me', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // 1. Atualiza os elementos visuais na página imediatamente
+          document.getElementById('perfil-nome').textContent    = data.nome;
+          document.getElementById('perfil-email').textContent   = data.email;
+          document.getElementById('perfil-avatar').textContent  = data.nome.charAt(0).toUpperCase();
+          document.getElementById('navbar-nome').textContent    = data.nome;
+          document.getElementById('navbar-avatar').textContent  = data.nome.charAt(0).toUpperCase();
+
+          // 2. Reescreve o cookie "usuario" no browser
+          // O backend já reenvia o cookie via Set-Cookie,
+          // mas atualizamos aqui também para garantir sincronia imediata
+          document.cookie = `usuario=${encodeURIComponent(JSON.stringify({
+            id:    data.id,
+            nome:  data.nome,
+            email: data.email
+          }))}; path=/; max-age=${7 * 24 * 60 * 60}`;
+
+          // 3. Limpa o campo de senha
+          document.getElementById('input-senha').value = '';
+
+          document.getElementById('msg-sucesso').style.display = 'block';
+          setTimeout(() => {
+            document.getElementById('msg-sucesso').style.display = 'none';
+          }, 3000);
+
+        } else {
+          document.getElementById('msg-erro').textContent    = data.erro || 'Erro ao salvar';
+          document.getElementById('msg-erro').style.display  = 'block';
+        }
+      } catch {
+        document.getElementById('msg-erro').textContent   = 'Erro de conexão. Tente novamente.';
+        document.getElementById('msg-erro').style.display = 'block';
+      }
+    });
+
+    async function deletarConta() {
+      if (!confirm('Tem certeza? Esta ação é irreversível e apagará todos os seus dados.')) return;
+      try {
+        const res = await fetch('/api/auth/users/me', { method: 'DELETE' });
+        if (res.ok) {
+          window.location.href = '/logout';
+        } else {
+          const data = await res.json();
+          alert(data.erro || 'Erro ao deletar conta');
+        }
+      } catch {
+        alert('Erro de conexão');
+      }
+    }
+
+    carregarStats();
+  </script>
 </body>
 </html>
+
