@@ -26,17 +26,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-const authRoutes      = require('./routes/authRoutes');
-const itemRoutes      = require('./routes/itemRoutes');
-const tradeRoutes     = require('./routes/tradeRoutes');
-const messageRoutes   = require('./routes/messageRoutes');
-const favoriteRoutes  = require('./routes/favoriteRoutes');
+const authRoutes    = require('./routes/authRoutes');
+const itemRoutes    = require('./routes/itemRoutes');
+const tradeRoutes   = require('./routes/tradeRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+const favoriteRoutes= require('./routes/favoriteRoutes');
+const ratingRoutes  = require('./routes/ratingRoutes'); // ← NOVO
 
-app.use('/api/auth',      authRoutes);
-app.use('/api/items',     itemRoutes);
-app.use('/api/trades',    tradeRoutes);
-app.use('/api/messages',  messageRoutes);
-app.use('/api/favorites', favoriteRoutes);
+app.use('/api/auth',     authRoutes);
+app.use('/api/items',    itemRoutes);
+app.use('/api/trades',   tradeRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/favorites',favoriteRoutes);
+app.use('/api/ratings',  ratingRoutes); // ← NOVO
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', mensagem: 'ReUse+ API funcionando' });
@@ -47,17 +49,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ erro: 'Erro interno do servidor' });
 });
 
-const sequelize = require('./config/database');
-const User     = require('./models/user');
-const Item     = require('./models/item');
-const Trade    = require('./models/trade');
-const Message  = require('./models/message');
-const Favorite = require('./models/favorite');
+const sequelize  = require('./config/database');
+const User       = require('./models/user');
+const Item       = require('./models/item');
+const Trade      = require('./models/trade');
+const Message    = require('./models/message');
+const Favorite   = require('./models/favorite');
+const Rating     = require('./models/rating'); // ← NOVO
 
 const PORT = process.env.PORT || 3000;
 
 sequelize.authenticate()
-  .then(() => sequelize.sync({ alter: true }))
+  .then(() => sequelize.sync({ alter: true })) // cria tabela ratings automaticamente
   .then(() => {
     server.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
