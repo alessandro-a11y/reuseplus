@@ -6,15 +6,449 @@
   <title>Mensagens — ReUsePlus</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .messages-page {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      height: calc(100vh - 68px);
+      overflow: hidden;
+    }
+
+    .conv-panel {
+      background: #fff;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .conv-panel-header {
+      padding: 20px 20px 0 20px;
+      flex-shrink: 0;
+    }
+
+    .conv-panel-header h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0 0 4px;
+    }
+
+    .conv-panel-header .sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .conv-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-main);
+      border-radius: var(--radius-md);
+      padding: 9px 14px;
+      margin-bottom: 12px;
+    }
+
+    .conv-search i { font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
+
+    .conv-search input {
+      border: none;
+      background: none;
+      outline: none;
+      font-size: 13px;
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-main);
+    }
+
+    .conv-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 8px 12px 8px;
+    }
+
+    .conv-list::-webkit-scrollbar { width: 4px; }
+    .conv-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+    .conv-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .conv-item:hover { background: var(--bg-main); }
+    .conv-item.active { background: var(--color-primary-light); }
+    .conv-item.active .conv-name { color: var(--color-primary-dark); }
+
+    .conv-avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .conv-info { flex: 1; min-width: 0; }
+
+    .conv-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .conv-preview {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .conv-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .conv-time { font-size: 11px; color: var(--text-muted); }
+
+    .conv-badge {
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 6px;
+    }
+
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-main);
+      overflow: hidden;
+    }
+
+    .chat-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .chat-placeholder i { font-size: 56px; color: #d8f3dc; }
+
+    .chat-placeholder h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0 0 4px;
+    }
+
+    .chat-placeholder p { font-size: 14px; margin: 0; }
+
+    .chat-active {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      background: #fff;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    .chat-header-info { flex: 1; min-width: 0; }
+
+    .chat-header-nome {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .chat-header-trade {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .chat-header-trade i { font-size: 11px; color: var(--color-primary); }
+
+    .chat-msgs {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-msgs::-webkit-scrollbar { width: 4px; }
+    .chat-msgs::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+    .msg-date-divider { text-align: center; margin: 8px 0; }
+
+    .msg-date-divider span {
+      background: var(--border-color);
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+
+    .msg-row {
+      display: flex;
+      flex-direction: column;
+      max-width: 70%;
+    }
+
+    .msg-row.minha  { align-self: flex-end;   align-items: flex-end; }
+    .msg-row.deles  { align-self: flex-start;  align-items: flex-start; }
+
+    .msg-sender {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+      padding: 0 4px;
+    }
+
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .msg-row.minha .msg-bubble {
+      background: var(--color-primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-row.deles .msg-bubble {
+      background: #fff;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .chat-input-area {
+      background: #fff;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .chat-input {
+      flex: 1;
+      min-height: 42px;
+      max-height: 120px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 22px;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-main);
+      background: var(--bg-main);
+      outline: none;
+      resize: none;
+      overflow-y: auto;
+      line-height: 1.5;
+      transition: border 0.2s, background 0.2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--color-primary);
+      background: #fff;
+    }
+
+    .btn-send {
+      width: 42px;
+      height: 42px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+
+    .btn-send:hover { background: var(--color-primary-dark); transform: scale(1.05); }
+    .btn-send:disabled { background: var(--border-color); cursor: not-allowed; transform: none; }
+
+    .btn-nova-conversa {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--color-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.2s;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .btn-nova-conversa:hover { background: var(--color-primary-dark); }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+      background: #fff;
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .modal-box h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 0;
+    }
+
+    .modal-box .sub { font-size: 13px; color: var(--text-muted); margin: -8px 0 0; }
+
+    .modal-trades-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .modal-trade-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .modal-trade-item:hover {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+
+    .modal-trade-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .conv-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .conv-empty i { font-size: 36px; color: #d8f3dc; display: block; margin-bottom: 12px; }
+    .conv-empty p { font-size: 14px; font-weight: 600; color: var(--text-main); margin: 0 0 4px; }
+    .conv-empty span { font-size: 12px; }
+
+    @media (max-width: 768px) {
+      .messages-page { grid-template-columns: 1fr; grid-template-rows: 240px 1fr; }
+      .conv-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
     <%- include('../partials/sidebar', { page: 'messages', usuario: usuario }) %>
+
     <div class="main-content">
       <nav class="navbar">
         <span class="page-title">Mensagens</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" aria-label="Notificações">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -22,40 +456,436 @@
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
       </nav>
-      <div class="content">
 
-        <div class="messages-layout">
+      <div class="messages-page">
 
-          <div class="panel messages-list">
-            <div class="panel-header">
-              <div>
-                <h3>Conversas</h3>
-                <div class="panel-sub">Suas mensagens com outros usuários</div>
-              </div>
-            </div>
-            <div class="search-bar">
+        <!-- Painel esquerdo: conversas -->
+        <div class="conv-panel">
+          <div class="conv-panel-header">
+            <h3>Conversas</h3>
+            <div class="sub">Mensagens com outros usuários</div>
+            <div class="conv-search">
               <i class="fas fa-search"></i>
-              <input type="text" placeholder="Buscar conversa...">
+              <input type="text" id="busca-input" placeholder="Buscar conversa..." oninput="filtrarConversas(this.value)">
             </div>
-            <div class="empty-state" style="padding: 40px 0;">
-              <i class="fas fa-comment-dots" style="font-size:36px; color:#d8f3dc; margin-bottom:12px;"></i>
-              <p>Nenhuma conversa ainda</p>
-              <span>Inicie uma troca para começar a conversar.</span>
+            <button class="btn-nova-conversa" onclick="abrirModalNovaConversa()">
+              <i class="fas fa-plus"></i> Nova Conversa
+            </button>
+          </div>
+
+          <div class="conv-list" id="conv-list">
+            <div style="text-align:center; padding:32px; color:var(--text-muted);">
+              <i class="fas fa-spinner fa-spin" style="font-size:22px; color:#d8f3dc;"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Painel direito: chat -->
+        <div class="chat-panel">
+
+          <div class="chat-placeholder" id="chat-placeholder">
+            <i class="fas fa-comments"></i>
+            <div>
+              <h3>Selecione uma conversa</h3>
+              <p>Escolha ao lado ou inicie uma nova.</p>
             </div>
           </div>
 
-          <div class="panel messages-chat">
-            <div class="chat-placeholder">
-              <i class="fas fa-comments"></i>
-              <p>Selecione uma conversa</p>
-              <span>Escolha uma conversa ao lado para começar.</span>
+          <div class="chat-active" id="chat-active">
+            <div class="chat-header">
+              <div class="conv-avatar" id="chat-avatar-letra">?</div>
+              <div class="chat-header-info">
+                <div class="chat-header-nome" id="chat-nome">—</div>
+                <div class="chat-header-trade" id="chat-trade-info">
+                  <i class="fas fa-arrows-rotate"></i>
+                  <span>—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-msgs" id="chat-msgs"></div>
+
+            <div class="chat-input-area">
+              <textarea
+                class="chat-input"
+                id="chat-input"
+                placeholder="Escreva uma mensagem..."
+                rows="1"
+                onkeydown="handleInputKeydown(event)"
+                oninput="autoResizeTextarea(this)"
+              ></textarea>
+              <button class="btn-send" id="btn-send" onclick="enviarMensagem()">
+                <i class="fas fa-paper-plane"></i>
+              </button>
             </div>
           </div>
 
         </div>
-
       </div>
     </div>
   </div>
+
+  <!-- Modal nova conversa -->
+  <div class="modal-overlay" id="modal-nova-conversa">
+    <div class="modal-box">
+      <div>
+        <h3>Iniciar Conversa</h3>
+        <div class="sub">Escolha uma troca para começar</div>
+      </div>
+      <div class="modal-trades-list" id="modal-trades-list">
+        <div style="text-align:center; padding:20px; color:var(--text-muted);">
+          <i class="fas fa-spinner fa-spin"></i>
+        </div>
+      </div>
+      <button class="btn-secondary" onclick="fecharModal()"
+              style="width:100%; padding:10px; border-radius:var(--radius-md);">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  
+<script>
+    const USUARIO_ID   = <%= usuario.id %>;
+    const USUARIO_NOME = '<%= usuario.nome.replace(/'/g, "\\'") %>';
+    const BACKEND_URL  = 'http://localhost:3000';
+
+    let conversas    = [];
+    let tradeAtualId = null;
+    let socket;
+
+    /* ── Socket.io ── */
+    function iniciarSocket() {
+      socket = io(BACKEND_URL, {
+        withCredentials: true,
+        transports: ['websocket', 'polling']
+      });
+
+      socket.on('connect', () => console.log('[Socket] Conectado:', socket.id));
+
+      socket.on('nova_mensagem', (msg) => {
+        if (msg.trade_id === tradeAtualId) {
+          if (msg.remetente_id !== USUARIO_ID) {
+            adicionarMensagemNaView(msg);
+            scrollParaBaixo();
+          }
+        }
+        carregarConversas();
+        // Atualiza badges após receber mensagem em tempo real
+        if (window.atualizarBadgesSidebar) window.atualizarBadgesSidebar();
+      });
+
+      socket.on('disconnect', () => console.log('[Socket] Desconectado'));
+    }
+
+    /* ── Conversas ── */
+    async function carregarConversas() {
+      try {
+        const res = await fetch('/api/messages');
+        if (!res.ok) throw new Error();
+        conversas = await res.json();
+        renderConversas(conversas);
+      } catch {
+        document.getElementById('conv-list').innerHTML = `
+          <div class="conv-empty">
+            <i class="fas fa-circle-exclamation" style="color:#e05555;"></i>
+            <p>Erro ao carregar</p>
+          </div>`;
+      }
+    }
+
+    function renderConversas(lista) {
+      const el = document.getElementById('conv-list');
+
+      if (!lista.length) {
+        el.innerHTML = `
+          <div class="conv-empty">
+            <i class="fas fa-comment-slash"></i>
+            <p>Nenhuma conversa ainda</p>
+            <span>Inicie uma troca para conversar.</span>
+          </div>`;
+        return;
+      }
+
+      el.innerHTML = lista.map(c => {
+        const nome    = c.outraParte?.nome || 'Usuário';
+        const inicial = nome[0].toUpperCase();
+        const preview = c.ultimaMensagem
+          ? (c.ultimaMensagem.remetente_id === USUARIO_ID ? 'Você: ' : '') + c.ultimaMensagem.texto
+          : '';
+        const hora  = c.ultimaMensagem ? formatarHora(c.ultimaMensagem.createdAt) : '';
+        const ativo = tradeAtualId === c.trade.id ? 'active' : '';
+
+        return `
+          <div class="conv-item ${ativo}" id="conv-item-${c.trade.id}"
+               onclick="abrirChat(${c.trade.id})">
+            <div class="conv-avatar">${inicial}</div>
+            <div class="conv-info">
+              <div class="conv-name">${escapar(nome)}</div>
+              <div class="conv-preview">${escapar(preview)}</div>
+            </div>
+            <div class="conv-meta">
+              <div class="conv-time">${hora}</div>
+              ${c.naoLidas > 0 ? `<div class="conv-badge">${c.naoLidas}</div>` : ''}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function filtrarConversas(q) {
+      const t = q.toLowerCase().trim();
+      renderConversas(!t ? conversas : conversas.filter(c =>
+        (c.outraParte?.nome || '').toLowerCase().includes(t) ||
+        (c.ultimaMensagem?.texto || '').toLowerCase().includes(t)
+      ));
+    }
+
+    /* ── Abrir chat ── */
+    async function abrirChat(tradeId) {
+      if (tradeAtualId && socket) socket.emit('sair_trade', tradeAtualId);
+      tradeAtualId = tradeId;
+
+      document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+      const convItem = document.getElementById(`conv-item-${tradeId}`);
+      if (convItem) convItem.classList.add('active');
+
+      if (socket) socket.emit('entrar_trade', tradeId);
+
+      document.getElementById('chat-placeholder').style.display = 'none';
+      document.getElementById('chat-active').style.display = 'flex';
+
+      document.getElementById('chat-msgs').innerHTML = `
+        <div style="text-align:center; padding:40px; color:var(--text-muted);">
+          <i class="fas fa-spinner fa-spin" style="font-size:22px; color:#d8f3dc;"></i>
+        </div>`;
+
+      try {
+        const res = await fetch(`/api/messages/${tradeId}`);
+        if (!res.ok) throw new Error();
+        const { trade, mensagens } = await res.json();
+
+        const outraParte = trade.solicitante_id === USUARIO_ID
+          ? trade.receptor : trade.solicitante;
+        const nome = outraParte?.nome || 'Usuário';
+
+        document.getElementById('chat-avatar-letra').textContent = nome[0].toUpperCase();
+        document.getElementById('chat-nome').textContent = nome;
+        document.getElementById('chat-trade-info').innerHTML = `
+          <i class="fas fa-arrows-rotate"></i>
+          <span>Troca #${trade.id} — ${escapar(trade.itemOferecido?.titulo || '?')} ↔ ${escapar(trade.itemDesejado?.titulo || '?')}</span>`;
+
+        renderMensagens(mensagens);
+        scrollParaBaixo();
+
+        // Atualiza badges IMEDIATAMENTE após abrir o chat (mensagens foram marcadas como lidas)
+        if (window.atualizarBadgesSidebar) window.atualizarBadgesSidebar();
+
+      } catch {
+        document.getElementById('chat-msgs').innerHTML = `
+          <div style="text-align:center; padding:40px; color:#e05555;">
+            <i class="fas fa-circle-exclamation" style="font-size:28px; display:block; margin-bottom:10px;"></i>
+            <p>Erro ao carregar mensagens</p>
+          </div>`;
+      }
+    }
+
+    /* ── Renderizar mensagens ── */
+    function renderMensagens(mensagens) {
+      const el = document.getElementById('chat-msgs');
+
+      if (!mensagens.length) {
+        el.innerHTML = `
+          <div style="text-align:center; padding:40px; color:var(--text-muted);">
+            <i class="fas fa-comment-dots" style="font-size:32px; color:#d8f3dc; display:block; margin-bottom:10px;"></i>
+            <p style="font-weight:600; color:var(--text-main); margin:0 0 4px;">Nenhuma mensagem ainda</p>
+            <span style="font-size:13px;">Seja o primeiro a enviar!</span>
+          </div>`;
+        return;
+      }
+
+      let ultimaData = null;
+      el.innerHTML = mensagens.map(msg => {
+        const data = formatarData(msg.createdAt);
+        let sep = '';
+        if (data !== ultimaData) {
+          ultimaData = data;
+          sep = `<div class="msg-date-divider"><span>${data}</span></div>`;
+        }
+        return sep + renderBolha(msg);
+      }).join('');
+    }
+
+    function renderBolha(msg) {
+      const minha = msg.remetente_id === USUARIO_ID;
+      return `
+        <div class="msg-row ${minha ? 'minha' : 'deles'}" id="msg-${msg.id}">
+          ${!minha ? `<div class="msg-sender">${escapar(msg.remetente?.nome || 'Usuário')}</div>` : ''}
+          <div class="msg-bubble">${escapar(msg.texto)}</div>
+          <div class="msg-time">${formatarHora(msg.createdAt)}</div>
+        </div>`;
+    }
+
+    function adicionarMensagemNaView(msg) {
+      const el = document.getElementById('chat-msgs');
+
+      // Remove placeholder de "nenhuma mensagem" se existir
+      const placeholder = el.querySelector('[style*="Nenhuma mensagem"]');
+      if (placeholder) el.innerHTML = '';
+
+      // BUG 3 CORRIGIDO:
+      // Pega o último separador de data existente de forma confiável
+      const separadores = el.querySelectorAll('.msg-date-divider span');
+      const ultimoSeparador = separadores.length
+        ? separadores[separadores.length - 1].textContent
+        : null;
+
+      const dataNova = formatarData(msg.createdAt);
+
+      // Só adiciona separador se a data for diferente da última
+      if (ultimoSeparador !== dataNova) {
+        el.insertAdjacentHTML('beforeend',
+          `<div class="msg-date-divider"><span>${dataNova}</span></div>`
+        );
+      }
+
+      el.insertAdjacentHTML('beforeend', renderBolha(msg));
+    }
+
+    /* ── Enviar mensagem ── */
+    async function enviarMensagem() {
+      if (!tradeAtualId) return;
+      const input = document.getElementById('chat-input');
+      const texto = input.value.trim();
+      if (!texto) return;
+
+      const btn = document.getElementById('btn-send');
+      btn.disabled = true;
+      input.value = '';
+      autoResizeTextarea(input);
+
+      try {
+        const res = await fetch(`/api/messages/${tradeAtualId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ texto })
+        });
+
+        if (!res.ok) throw new Error((await res.json()).erro || 'Erro ao enviar');
+
+        const msg = await res.json();
+        adicionarMensagemNaView(msg);
+        scrollParaBaixo();
+        carregarConversas();
+
+      } catch (err) {
+        input.value = texto;
+        autoResizeTextarea(input);
+        alert('Erro ao enviar: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        input.focus();
+      }
+    }
+
+    function handleInputKeydown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
+    }
+
+    function autoResizeTextarea(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    /* ── Modal nova conversa ── */
+    async function abrirModalNovaConversa() {
+      document.getElementById('modal-nova-conversa').classList.add('show');
+      const lista = document.getElementById('modal-trades-list');
+      lista.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i></div>';
+
+      try {
+        const res    = await fetch('/api/messages/trades');
+        const trades = await res.json();
+
+        if (!trades.length) {
+          lista.innerHTML = `
+            <div class="conv-empty" style="padding:20px 0;">
+              <i class="fas fa-arrows-rotate"></i>
+              <p>Nenhuma troca encontrada</p>
+              <span>Você precisa ter uma troca para conversar.</span>
+            </div>`;
+          return;
+        }
+
+        lista.innerHTML = trades.map(c => {
+          const nome = c.outraParte?.nome || 'Usuário';
+          return `
+            <div class="modal-trade-item" onclick="abrirChatModal(${c.trade.id})">
+              <div class="modal-trade-icon"><i class="fas fa-arrows-rotate"></i></div>
+              <div style="flex:1; min-width:0;">
+                <div style="font-size:14px; font-weight:700; color:var(--text-main);">${escapar(nome)}</div>
+                <div style="font-size:12px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                  Troca #${c.trade.id} — ${escapar(c.trade.itemOferecido?.titulo || '?')} ↔ ${escapar(c.trade.itemDesejado?.titulo || '?')}
+                </div>
+              </div>
+              <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:11px; flex-shrink:0;"></i>
+            </div>`;
+        }).join('');
+      } catch {
+        lista.innerHTML = `<div class="alert-erro"><i class="fas fa-circle-exclamation"></i> Erro ao carregar.</div>`;
+      }
+    }
+
+    function abrirChatModal(tradeId) {
+      fecharModal();
+      abrirChat(tradeId);
+      carregarConversas();
+    }
+
+    function fecharModal() {
+      document.getElementById('modal-nova-conversa').classList.remove('show');
+    }
+
+    document.getElementById('modal-nova-conversa').addEventListener('click', function(e) {
+      if (e.target === this) fecharModal();
+    });
+
+    /* ── Utilitários ── */
+    function scrollParaBaixo() {
+      const el = document.getElementById('chat-msgs');
+      if (el) setTimeout(() => { el.scrollTop = el.scrollHeight; }, 50);
+    }
+
+    function formatarHora(d) {
+      return new Date(d).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatarData(d) {
+      const data  = new Date(d);
+      const hoje  = new Date();
+      const ontem = new Date(); ontem.setDate(hoje.getDate() - 1);
+      if (data.toDateString() === hoje.toDateString())  return 'Hoje';
+      if (data.toDateString() === ontem.toDateString()) return 'Ontem';
+      return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+    }
+
+    function escapar(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    /* ── Init ── */
+    iniciarSocket();
+    carregarConversas();
+
+    // Não chama atualizarBadge aqui — a sidebar já faz isso globalmente
+    // Intervalo removido daqui pois está na sidebar (evita chamadas duplicadas)
+
+    const urlParams  = new URLSearchParams(window.location.search);
+    const tradeParam = urlParams.get('trade');
+    if (tradeParam) setTimeout(() => abrirChat(Number(tradeParam)), 600);
+  </script>
 </body>
 </html>
