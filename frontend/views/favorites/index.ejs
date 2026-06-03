@@ -10,11 +10,12 @@
 <body>
   <div class="layout">
     <%- include('../partials/sidebar', { page: 'favorites', usuario: usuario }) %>
+
     <div class="main-content">
       <nav class="navbar">
         <span class="page-title">Favoritos</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -22,27 +23,147 @@
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
       </nav>
-      <div class="content">
 
+      <div class="content">
         <div class="panel">
           <div class="panel-header">
             <div>
               <h3>Itens Favoritos</h3>
               <div class="panel-sub">Itens que você salvou para ver depois</div>
             </div>
+            <span class="badge-timeline" id="total-badge" style="display:none;"></span>
           </div>
-          <div class="favorites-grid" id="favorites-grid">
-            <div class="empty-state">
-              <i class="fas fa-heart" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
-              <p>Nenhum favorito ainda</p>
-              <span>Explore itens e salve os que mais gostar.</span>
-              <a href="/items" class="card-link" style="margin-top:16px;">Explorar itens <i class="fas fa-arrow-right"></i></a>
-            </div>
+
+          <!-- Loading -->
+          <div id="loading" style="text-align:center; padding:40px; color:var(--text-muted);">
+            <i class="fas fa-spinner fa-spin" style="font-size:28px; color:#d8f3dc;"></i>
+            <p style="margin-top:12px; font-size:14px;">Carregando favoritos...</p>
+          </div>
+
+          <!-- Grid de itens -->
+          <div id="items-grid" class="items-grid" style="display:none;"></div>
+
+          <!-- Estado vazio -->
+          <div id="empty-state" style="display:none; flex-direction:column; align-items:center; padding:48px 0; text-align:center; color:var(--text-muted);">
+            <i class="fas fa-heart" style="font-size:48px; color:#d8f3dc; margin-bottom:16px;"></i>
+            <p style="font-size:16px; font-weight:600; color:var(--text-main); margin:0 0 6px;">Nenhum favorito ainda</p>
+            <span style="font-size:13px;">Explore itens e clique no coração para salvar.</span>
+            <a href="/explore" class="card-link" style="margin-top:16px;">
+              Explorar itens <i class="fas fa-arrow-right"></i>
+            </a>
           </div>
         </div>
-
       </div>
     </div>
   </div>
+
+  <script>
+    const estadoLabel = { novo: 'Novo', usado: 'Usado', danificado: 'Danificado' };
+    const estadoCor   = { novo: '#5db87a', usado: '#e0a055', danificado: '#e05555' };
+
+    async function carregarFavoritos() {
+      try {
+        const res  = await fetch('/api/favorites');
+        const itens = res.ok ? await res.json() : [];
+
+        document.getElementById('loading').style.display = 'none';
+
+        if (!itens.length) {
+          document.getElementById('empty-state').style.display = 'flex';
+          return;
+        }
+
+        const badge = document.getElementById('total-badge');
+        badge.textContent = `${itens.length} item${itens.length !== 1 ? 's' : ''}`;
+        badge.style.display = 'inline-block';
+
+        const grid = document.getElementById('items-grid');
+        grid.style.display = 'grid';
+        grid.innerHTML = itens.map(item => `
+          <div class="item-card" id="card-${item.id}">
+            <div class="item-card-img" onclick="window.location='/items/${item.id}'" style="cursor:pointer;">
+              ${item.imagem_url
+                ? `<img src="${item.imagem_url}" alt="${escapar(item.titulo)}">`
+                : `<i class="fas fa-image" style="font-size:36px; color:#b0c4b1;"></i>`}
+            </div>
+            <div class="item-card-body">
+              <div class="item-card-title">${escapar(item.titulo)}</div>
+              <div class="item-card-meta">
+                <span style="color:${estadoCor[item.estado] || '#888'};">
+                  ● ${estadoLabel[item.estado] || item.estado || 'N/A'}
+                </span>
+                ${item.categoria ? `<span style="color:var(--text-muted);">${escapar(item.categoria)}</span>` : ''}
+              </div>
+              ${item.descricao
+                ? `<div class="item-card-desc">${escapar(item.descricao)}</div>`
+                : ''}
+              <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                <div class="avatar" style="width:22px;height:22px;font-size:10px;flex-shrink:0;">
+                  ${(item.dono?.nome || 'U')[0].toUpperCase()}
+                </div>
+                <a href="/users/${item.dono?.id}" style="font-size:12px; color:var(--text-muted); text-decoration:none;">
+                  ${escapar(item.dono?.nome || 'Usuário')}
+                </a>
+              </div>
+              <div class="item-card-actions">
+                <a href="/items/${item.id}" class="btn-sm">
+                  <i class="fas fa-eye"></i> Ver detalhes
+                </a>
+                <button class="btn-sm btn-sm-outline" onclick="removerFavorito(${item.id})" title="Remover dos favoritos">
+                  <i class="fas fa-heart" style="color:#e05555;"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
+      }
+    }
+
+    async function removerFavorito(itemId) {
+      try {
+        const res = await fetch(`/api/favorites/${itemId}`, { method: 'DELETE' });
+        if (res.ok) {
+          // Remove o card com animação
+          const card = document.getElementById(`card-${itemId}`);
+          if (card) {
+            card.style.transition = 'opacity 0.3s, transform 0.3s';
+            card.style.opacity    = '0';
+            card.style.transform  = 'scale(0.95)';
+            setTimeout(() => {
+              card.remove();
+              // Se ficou vazio, mostra empty state
+              const grid = document.getElementById('items-grid');
+              if (!grid.children.length) {
+                grid.style.display = 'none';
+                document.getElementById('empty-state').style.display = 'flex';
+                document.getElementById('total-badge').style.display = 'none';
+              }
+            }, 300);
+          }
+        } else {
+          const d = await res.json();
+          alert(d.erro || 'Erro ao remover favorito');
+        }
+      } catch {
+        alert('Erro de conexão');
+      }
+    }
+
+    function escapar(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    carregarFavoritos();
+  </script>
 </body>
 </html>
+
