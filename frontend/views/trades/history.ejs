@@ -6,6 +6,140 @@
   <title>Histórico de Trocas — ReUsePlus</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+    .timeline-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 44px;
+      flex-shrink: 0;
+    }
+    .timeline-dot {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .timeline-dot.concluida { background: #d8f3dc; color: #2d6a4f; }
+    .timeline-dot.recusada  { background: #fff0f0; color: #e05555; }
+    .timeline-line {
+      width: 2px;
+      flex: 1;
+      background: var(--border-color);
+      margin: 4px 0;
+      min-height: 20px;
+    }
+    .timeline-item:last-child .timeline-line {
+      display: none;
+    }
+    .timeline-card {
+      flex: 1;
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .timeline-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .timeline-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .timeline-items {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-main);
+      border-radius: var(--radius-md);
+      flex-wrap: wrap;
+    }
+    .tl-thumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 100px;
+    }
+    .tl-thumb-img {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #b0c4b1;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--border-color);
+    }
+    .tl-thumb-img img { width:100%; height:100%; object-fit:cover; }
+    .co2-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #d8f3dc;
+      color: #1b4332;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    /* Resumo topo */
+    .history-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+    .summary-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+    }
+    .summary-card .num {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -1px;
+      display: block;
+    }
+    .summary-card .lbl {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .summary-card.verde .num { color: var(--color-primary); }
+    .summary-card.verde { border-color: #b7e4c7; }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -14,14 +148,18 @@
       <nav class="navbar">
         <span class="page-title">Histórico de Trocas</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
-          <div class="user-chip">
+          <button class="notif-btn" aria-label="Notificações" onclick="window.location.href='/trades?filtro=pendente'">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
+          <div class="user-chip" onclick="window.location.href='/profile'" style="cursor:pointer;">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
       </nav>
+
       <div class="content">
 
         <div class="trades-tabs">
@@ -29,33 +167,184 @@
           <a href="/trades/history" class="trade-tab active">Histórico</a>
         </div>
 
+        <!-- Resumo -->
+        <div class="history-summary" id="summary" style="display:none;">
+          <div class="summary-card verde">
+            <span class="num" id="sum-concluidas">0</span>
+            <span class="lbl">Trocas concluídas</span>
+          </div>
+          <div class="summary-card">
+            <span class="num" id="sum-recusadas">0</span>
+            <span class="lbl">Recusadas</span>
+          </div>
+          <div class="summary-card verde">
+            <span class="num" id="sum-co2">0 kg</span>
+            <span class="lbl">CO₂ evitado</span>
+          </div>
+        </div>
+
         <div class="panel">
           <div class="panel-header">
             <div>
               <h3>Histórico de Trocas</h3>
-              <div class="panel-sub">Todas as trocas concluídas, rejeitadas e canceladas</div>
+              <div class="panel-sub">Trocas concluídas e recusadas</div>
             </div>
           </div>
 
           <div class="trades-filter">
-            <button class="filter-btn active">Todas</button>
-            <button class="filter-btn">Concluídas</button>
-            <button class="filter-btn">Rejeitadas</button>
-            <button class="filter-btn">Canceladas</button>
+            <button class="filter-btn active" onclick="filtrar('todas', this)">Todas</button>
+            <button class="filter-btn" onclick="filtrar('concluida', this)">Concluídas</button>
+            <button class="filter-btn" onclick="filtrar('recusada', this)">Recusadas</button>
           </div>
 
-          <div class="empty-state">
+          <div id="loading" style="text-align:center; padding:40px; color:#6c757d;">
+            <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
+            <p>Carregando histórico...</p>
+          </div>
+
+          <div id="timeline-container" class="timeline" style="display:none; margin-top:8px;"></div>
+
+          <div id="empty-state" class="empty-state" style="display:none;">
             <i class="fas fa-clock-rotate-left" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
             <p>Nenhuma troca no histórico</p>
-            <span>Suas trocas concluídas aparecerão aqui.</span>
+            <span>Suas trocas concluídas e recusadas aparecerão aqui.</span>
             <a href="/trades" class="card-link" style="margin-top:16px;">
               Ver trocas ativas <i class="fas fa-arrow-right"></i>
             </a>
+          </div>
+
+          <div id="erro-state" class="empty-state" style="display:none;">
+            <i class="fas fa-circle-exclamation" style="font-size:40px; color:#e05555; margin-bottom:12px;"></i>
+            <p>Erro ao carregar histórico</p>
           </div>
         </div>
 
       </div>
     </div>
   </div>
+
+  <script>
+    let todasTrocas = [];
+    const usuarioId = <%= usuario.id || 0 %>;
+
+    // Notif badge
+    fetch('/api/notifications/count').then(r => r.json()).then(d => {
+      if (d.count > 0) {
+        const b = document.getElementById('notif-badge');
+        if (b) { b.textContent = d.count > 9 ? '9+' : d.count; b.classList.add('show'); }
+      }
+    }).catch(() => {});
+
+    function thumbHtml(item) {
+      if (!item) return `<i class="fas fa-box"></i>`;
+      if (item.imagem_url)
+        return `<img src="${item.imagem_url}" onerror="this.outerHTML='<i class=\\'fas fa-box\\'></i>'">`;
+      return `<i class="fas fa-box"></i>`;
+    }
+
+    function renderTimeline(trades) {
+      const container = document.getElementById('timeline-container');
+      const empty     = document.getElementById('empty-state');
+
+      if (trades.length === 0) {
+        container.style.display = 'none';
+        empty.style.display = 'flex';
+        return;
+      }
+
+      empty.style.display = 'none';
+      container.style.display = 'flex';
+
+      container.innerHTML = trades.map((trade, idx) => {
+        const concluida = trade.status === 'concluida';
+        const enviada   = trade.solicitante_id === usuarioId;
+        const outraParte = enviada ? (trade.receptor?.nome || 'Usuário') : (trade.solicitante?.nome || 'Usuário');
+        const data = new Date(trade.updatedAt || trade.createdAt).toLocaleDateString('pt-BR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        });
+
+        return `
+          <div class="timeline-item">
+            <div class="timeline-left">
+              <div class="timeline-dot ${trade.status}">
+                <i class="fas ${concluida ? 'fa-circle-check' : 'fa-times-circle'}"></i>
+              </div>
+              <div class="timeline-line"></div>
+            </div>
+            <div class="timeline-card">
+              <div class="timeline-card-header">
+                <div>
+                  <div style="font-size:15px; font-weight:700; color:var(--text-main); margin-bottom:3px;">
+                    ${enviada ? 'Para' : 'De'}: <strong>${outraParte}</strong>
+                  </div>
+                  <div style="font-size:12px; color:var(--text-muted);">${data}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  ${concluida ? `<span class="co2-badge"><i class="fas fa-leaf"></i> 2,3 kg CO₂ evitado</span>` : ''}
+                  <span class="trade-status-badge" style="background:${concluida ? '#2d6a4f20' : '#e0555520'}; color:${concluida ? '#2d6a4f' : '#e05555'};">
+                    ${concluida ? 'Concluída' : 'Recusada'}
+                  </span>
+                </div>
+              </div>
+              <div class="timeline-items">
+                <div class="tl-thumb">
+                  <div class="tl-thumb-img">${thumbHtml(trade.itemOferecido)}</div>
+                  <div>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">OFERECIDO</div>
+                    <div style="font-size:13px; font-weight:700; color:var(--text-main);">${trade.itemOferecido?.titulo || '—'}</div>
+                  </div>
+                </div>
+                <i class="fas fa-right-left" style="color:var(--color-primary); flex-shrink:0;"></i>
+                <div class="tl-thumb">
+                  <div class="tl-thumb-img">${thumbHtml(trade.itemDesejado)}</div>
+                  <div>
+                    <div style="font-size:11px; color:var(--text-muted); font-weight:600;">DESEJADO</div>
+                    <div style="font-size:13px; font-weight:700; color:var(--text-main);">${trade.itemDesejado?.titulo || '—'}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function filtrar(tipo, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      let filtrado = todasTrocas.filter(t => t.status === 'concluida' || t.status === 'recusada');
+      if (tipo === 'concluida') filtrado = filtrado.filter(t => t.status === 'concluida');
+      if (tipo === 'recusada')  filtrado = filtrado.filter(t => t.status === 'recusada');
+      renderTimeline(filtrado);
+    }
+
+    async function carregarHistorico() {
+      try {
+        const res = await fetch('/api/trades');
+        if (!res.ok) throw new Error();
+        todasTrocas = await res.json();
+
+        const historico    = todasTrocas.filter(t => t.status === 'concluida' || t.status === 'recusada');
+        const concluidas   = historico.filter(t => t.status === 'concluida').length;
+        const recusadas    = historico.filter(t => t.status === 'recusada').length;
+        const co2          = (concluidas * 2.3).toFixed(1);
+
+        // Resumo
+        if (historico.length > 0) {
+          document.getElementById('summary').style.display = 'grid';
+          document.getElementById('sum-concluidas').textContent = concluidas;
+          document.getElementById('sum-recusadas').textContent  = recusadas;
+          document.getElementById('sum-co2').textContent        = co2 + ' kg';
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        renderTimeline(historico);
+      } catch {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('erro-state').style.display = 'flex';
+      }
+    }
+
+    carregarHistorico();
+  </script>
 </body>
 </html>

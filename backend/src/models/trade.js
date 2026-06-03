@@ -36,15 +36,24 @@ const Trade = sequelize.define('Trade', {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: { model: 'items', key: 'id' }
+  },
+  // ✅ NOVO: campos para confirmação dupla de conclusão
+  confirmado_solicitante: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  confirmado_receptor: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
   }
 }, {
   tableName: 'trades',
   timestamps: true
 });
 
-Trade.belongsTo(User, { foreignKey: 'solicitante_id', as: 'solicitante' });
-Trade.belongsTo(User, { foreignKey: 'receptor_id', as: 'receptor' });
+Trade.belongsTo(User, { foreignKey: 'solicitante_id',    as: 'solicitante' });
+Trade.belongsTo(User, { foreignKey: 'receptor_id',       as: 'receptor' });
 Trade.belongsTo(Item, { foreignKey: 'item_oferecido_id', as: 'itemOferecido' });
-Trade.belongsTo(Item, { foreignKey: 'item_desejado_id', as: 'itemDesejado' });
+Trade.belongsTo(Item, { foreignKey: 'item_desejado_id',  as: 'itemDesejado' });
 
 module.exports = Trade;

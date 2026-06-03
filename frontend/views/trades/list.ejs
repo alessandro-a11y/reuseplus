@@ -6,6 +6,90 @@
   <title>Trocas — ReUsePlus</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .trade-card-expanded {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      background: #fff;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .trade-card-expanded:hover {
+      box-shadow: var(--shadow-md);
+    }
+    .trade-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .trade-card-body {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      flex-wrap: wrap;
+    }
+    .trade-item-thumb {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 120px;
+    }
+    .trade-thumb-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: var(--bg-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #b0c4b1;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid var(--border-color);
+    }
+    .trade-thumb-img img { width:100%; height:100%; object-fit:cover; }
+    .trade-item-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .trade-item-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .trade-swap-icon {
+      font-size: 18px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+    .trade-card-footer {
+      padding: 12px 20px;
+      background: var(--bg-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border-color);
+    }
+    .badge-enviada {
+      background: #e8f4f8; color: #1a6a8a;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+    .badge-recebida {
+      background: #f3e8ff; color: #6a1a8a;
+      padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -14,15 +98,25 @@
       <nav class="navbar">
         <span class="page-title">Trocas</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
-          <div class="user-chip">
+          <button class="notif-btn" aria-label="Notificações" onclick="window.location.href='/trades?filtro=pendente'">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge" id="notif-badge"></span>
+          </button>
+          <div class="user-chip" onclick="window.location.href='/profile'" style="cursor:pointer;">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
       </nav>
+
       <div class="content">
+
+        <!-- Toast -->
+        <div id="toast" style="display:none; position:fixed; bottom:28px; left:50%; transform:translateX(-50%); padding:12px 24px; border-radius:12px; font-size:14px; font-weight:600; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.2); color:#fff; white-space:nowrap;">
+          <i id="toast-icon" class="fas fa-check-circle" style="margin-right:8px;"></i>
+          <span id="toast-msg"></span>
+        </div>
 
         <div class="trades-tabs">
           <a href="/trades" class="trade-tab active">Ativas</a>
@@ -38,13 +132,21 @@
           </div>
 
           <div class="trades-filter">
-            <button class="filter-btn active">Todas</button>
-            <button class="filter-btn">Recebidas</button>
-            <button class="filter-btn">Enviadas</button>
-            <button class="filter-btn">Pendentes</button>
+            <button class="filter-btn active" onclick="filtrar('todas', this)">Todas</button>
+            <button class="filter-btn" onclick="filtrar('recebidas', this)">Recebidas</button>
+            <button class="filter-btn" onclick="filtrar('enviadas', this)">Enviadas</button>
+            <button class="filter-btn" onclick="filtrar('pendente', this)">Pendentes</button>
+            <button class="filter-btn" onclick="filtrar('aceita', this)">Aceitas</button>
           </div>
 
-          <div class="empty-state">
+          <div id="loading" style="text-align:center; padding:40px; color:#6c757d;">
+            <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
+            <p>Carregando trocas...</p>
+          </div>
+
+          <div id="trades-list" style="display:none; flex-direction:column; gap:12px;"></div>
+
+          <div id="empty-state" class="empty-state" style="display:none;">
             <i class="fas fa-arrows-rotate" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
             <p>Nenhuma troca ativa</p>
             <span>Explore itens e solicite sua primeira troca.</span>
@@ -52,10 +154,222 @@
               Explorar itens <i class="fas fa-arrow-right"></i>
             </a>
           </div>
+
+          <div id="erro-state" class="empty-state" style="display:none;">
+            <i class="fas fa-circle-exclamation" style="font-size:40px; color:#e05555; margin-bottom:12px;"></i>
+            <p>Erro ao carregar trocas</p>
+            <span id="erro-msg"></span>
+          </div>
         </div>
 
       </div>
     </div>
   </div>
+
+  <script>
+    let todasTrocas = [];
+    const usuarioId = <%= usuario.id || 0 %>;
+
+    const statusLabel = { pendente:'Pendente', aceita:'Aceita', recusada:'Recusada', concluida:'Concluída' };
+    const statusCor   = { pendente:'#e0a055', aceita:'#5db87a', recusada:'#e05555', concluida:'#2d6a4f' };
+
+    // Notif badge
+    fetch('/api/notifications/count').then(r => r.json()).then(d => {
+      if (d.count > 0) {
+        const b = document.getElementById('notif-badge');
+        if (b) { b.textContent = d.count > 9 ? '9+' : d.count; b.classList.add('show'); }
+      }
+    }).catch(() => {});
+
+    // Toast de sucesso ao chegar da request
+    if (new URLSearchParams(window.location.search).get('sucesso')) {
+      mostrarToast('Solicitação de troca enviada com sucesso!', true);
+      history.replaceState({}, '', '/trades');
+    }
+
+    function mostrarToast(msg, ok = true) {
+      const el = document.getElementById('toast');
+      el.style.background = ok ? '#1b4332' : '#c0392b';
+      document.getElementById('toast-icon').className = ok ? 'fas fa-check-circle' : 'fas fa-circle-exclamation';
+      document.getElementById('toast-msg').textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3500);
+    }
+
+    function renderTrades(trades) {
+      const list  = document.getElementById('trades-list');
+      const empty = document.getElementById('empty-state');
+      const ativas = trades.filter(t => t.status === 'pendente' || t.status === 'aceita');
+
+      if (ativas.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'flex';
+        return;
+      }
+
+      empty.style.display = 'none';
+      list.style.display = 'flex';
+
+      list.innerHTML = ativas.map(trade => {
+        const enviada   = trade.solicitante_id === usuarioId;
+        const outraParte = enviada ? (trade.receptor?.nome || 'Usuário') : (trade.solicitante?.nome || 'Usuário');
+        const itemOfer  = trade.itemOferecido;
+        const itemDesej = trade.itemDesejado;
+
+        const thumbHtml = (item) => item
+          ? (item.imagem_url
+              ? `<img src="${item.imagem_url}" onerror="this.outerHTML='<i class=\\'fas fa-box\\'></i>'">`
+              : `<i class="fas fa-box"></i>`)
+          : `<i class="fas fa-box"></i>`;
+
+        const acoes = (() => {
+          if (!enviada && trade.status === 'pendente') return `
+            <button class="btn-sm" onclick="acao(${trade.id}, 'aceita')">
+              <i class="fas fa-check" style="margin-right:5px;"></i>Aceitar
+            </button>
+            <button class="btn-sm btn-sm-danger" onclick="acao(${trade.id}, 'recusada')">
+              <i class="fas fa-times" style="margin-right:5px;"></i>Rejeitar
+            </button>`;
+          if (enviada && trade.status === 'pendente') return `
+            <button class="btn-sm btn-sm-outline" onclick="acao(${trade.id}, 'recusada')">
+              <i class="fas fa-ban" style="margin-right:5px;"></i>Cancelar
+            </button>`;
+          if (trade.status === 'aceita') {
+            // ✅ verifica se o usuário atual já confirmou
+            const euJaConfirmei = (enviada && trade.confirmado_solicitante) ||
+                                  (!enviada && trade.confirmado_receptor);
+            const outraParteConfirmou = (enviada && trade.confirmado_receptor) ||
+                                        (!enviada && trade.confirmado_solicitante);
+            if (euJaConfirmei) return `
+              <span style="font-size:13px; color:#2d6a4f; display:flex; align-items:center; gap:6px;">
+                <i class="fas fa-check-circle"></i> Você confirmou. Aguardando ${outraParte} confirmar.
+              </span>`;
+            return `
+              <button class="btn-sm" style="background:#2d6a4f;" onclick="concluir(${trade.id})">
+                <i class="fas fa-circle-check" style="margin-right:5px;"></i>Confirmar Conclusão
+              </button>
+              ${outraParteConfirmou ? `<span style="font-size:12px; color:#2d6a4f;"><i class="fas fa-check"></i> ${outraParte} já confirmou!</span>` : ''}`;
+          }
+          return '';
+        })();
+
+        return `
+          <div class="trade-card-expanded">
+            <div class="trade-card-header">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="trade-card-icon">
+                  <i class="fas fa-arrows-rotate"></i>
+                </div>
+                <div>
+                  <div class="trade-card-title">${enviada ? 'Para' : 'De'}: <strong>${outraParte}</strong></div>
+                  <div class="trade-card-date">${new Date(trade.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</div>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span class="${enviada ? 'badge-enviada' : 'badge-recebida'}">
+                  ${enviada ? 'Enviada' : 'Recebida'}
+                </span>
+                <span class="trade-status-badge" style="background:${statusCor[trade.status]}20; color:${statusCor[trade.status]};">
+                  ${statusLabel[trade.status]}
+                </span>
+              </div>
+            </div>
+
+            <div class="trade-card-body">
+              <div class="trade-item-thumb">
+                <div class="trade-thumb-img">${thumbHtml(itemOfer)}</div>
+                <div>
+                  <div class="trade-item-label">Oferecido</div>
+                  <div class="trade-item-title">${itemOfer?.titulo || '—'}</div>
+                </div>
+              </div>
+
+              <div class="trade-swap-icon"><i class="fas fa-right-left"></i></div>
+
+              <div class="trade-item-thumb">
+                <div class="trade-thumb-img">${thumbHtml(itemDesej)}</div>
+                <div>
+                  <div class="trade-item-label">Desejado</div>
+                  <div class="trade-item-title">${itemDesej?.titulo || '—'}</div>
+                </div>
+              </div>
+            </div>
+
+            ${acoes ? `<div class="trade-card-footer">${acoes}</div>` : ''}
+          </div>`;
+      }).join('');
+    }
+
+    function filtrar(tipo, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      let filtrado = todasTrocas;
+      if (tipo === 'recebidas') filtrado = filtrado.filter(t => t.receptor_id === usuarioId);
+      if (tipo === 'enviadas')  filtrado = filtrado.filter(t => t.solicitante_id === usuarioId);
+      if (tipo === 'pendente')  filtrado = filtrado.filter(t => t.status === 'pendente');
+      if (tipo === 'aceita')    filtrado = filtrado.filter(t => t.status === 'aceita');
+      renderTrades(filtrado);
+    }
+
+    async function acao(id, status) {
+      try {
+        const res = await fetch(`/api/trades/${id}/responder`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) {
+          const label = { aceita: 'Troca aceita!', recusada: 'Troca recusada.' };
+          mostrarToast(label[status] || 'Ação realizada.', status === 'aceita');
+          await carregarTrocas();
+        } else {
+          const d = await res.json();
+          mostrarToast(d.erro || 'Erro ao realizar ação.', false);
+        }
+      } catch {
+        mostrarToast('Erro de conexão.', false);
+      }
+    }
+
+    // ✅ CORRIGIDO: confirmação dupla — aguarda os dois confirmarem
+    async function concluir(id) {
+      if (!confirm('Confirmar que você recebeu o item e a troca foi realizada?')) return;
+      try {
+        const res = await fetch(`/api/trades/${id}/concluir`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const d = await res.json();
+        if (res.ok) {
+          if (d.concluida) {
+            mostrarToast('Troca concluída com sucesso! 🎉', true);
+          } else {
+            mostrarToast(d.mensagem || 'Sua confirmação foi registrada. Aguardando a outra parte.', true);
+          }
+          await carregarTrocas();
+        } else {
+          mostrarToast(d.erro || 'Erro ao concluir.', false);
+        }
+      } catch {
+        mostrarToast('Erro de conexão.', false);
+      }
+    }
+
+    async function carregarTrocas() {
+      try {
+        const res = await fetch('/api/trades');
+        if (!res.ok) throw new Error('Erro ao buscar trocas');
+        todasTrocas = await res.json();
+        document.getElementById('loading').style.display = 'none';
+        renderTrades(todasTrocas);
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('erro-state').style.display = 'flex';
+        document.getElementById('erro-msg').textContent = err.message;
+      }
+    }
+
+    carregarTrocas();
+  </script>
 </body>
 </html>
