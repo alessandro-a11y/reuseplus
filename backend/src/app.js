@@ -3,9 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 require('dotenv').config();
 
-const authRoutes = require('./routes/authRoutes');
-const itemRoutes = require('./routes/itemRoutes');
-const tradeRoutes = require('./routes/tradeRoutes');
+const authRoutes         = require('./routes/authRoutes');
+const itemRoutes         = require('./routes/itemRoutes');
+const tradeRoutes        = require('./routes/tradeRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 const app = express();
 
@@ -17,9 +18,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/auth', authRoutes);
-app.use('/api/items', itemRoutes);
-app.use('/api/trades', tradeRoutes);
+app.use('/api/auth',          authRoutes);
+app.use('/api/items',         itemRoutes);
+app.use('/api/trades',        tradeRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', mensagem: 'ReUse+ API funcionando' });

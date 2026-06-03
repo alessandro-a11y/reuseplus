@@ -41,6 +41,15 @@ const getUsuario = (req) => {
   }
 };
 
+// ── Helper: chama o backend com token ────────────────────────
+const api = (req) => {
+  const token = req.cookies.token;
+  return axios.create({
+    baseURL: BACKEND_URL,
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
 // ── Rotas públicas ────────────────────────────────────────────
 app.get('/', (req, res) => {
   if (req.cookies.token) return res.redirect('/dashboard');
@@ -65,19 +74,13 @@ app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   try {
     const { data } = await axios.post(`${BACKEND_URL}/auth/login`, { email, senha });
-
     const cookieOpts = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000
     };
-
     res.cookie('token', data.token, cookieOpts);
-    res.cookie('usuario', JSON.stringify(data.user), {
-      ...cookieOpts,
-      httpOnly: false // legível pelo EJS via req.cookies
-    });
-
+    res.cookie('usuario', JSON.stringify(data.user), { ...cookieOpts, httpOnly: false });
     res.redirect('/dashboard');
   } catch (err) {
     const msg = err.response?.data?.erro || 'E-mail ou senha incorretos.';
@@ -90,22 +93,14 @@ app.post('/register', async (req, res) => {
   const { nome, email, senha } = req.body;
   try {
     await axios.post(`${BACKEND_URL}/auth/register`, { nome, email, senha });
-
-    // Login automático após cadastro
     const { data } = await axios.post(`${BACKEND_URL}/auth/login`, { email, senha });
-
     const cookieOpts = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000
     };
-
     res.cookie('token', data.token, cookieOpts);
-    res.cookie('usuario', JSON.stringify(data.user), {
-      ...cookieOpts,
-      httpOnly: false
-    });
-
+    res.cookie('usuario', JSON.stringify(data.user), { ...cookieOpts, httpOnly: false });
     res.redirect('/dashboard');
   } catch (err) {
     const msg = err.response?.data?.erro || 'Erro ao cadastrar. Tente novamente.';
@@ -120,7 +115,7 @@ app.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-// ── Rotas privadas ────────────────────────────────────────────
+// ── Rotas de páginas ──────────────────────────────────────────
 app.get('/dashboard', autenticar, (req, res) =>
   res.render('dashboard/index', { usuario: getUsuario(req), page: 'dashboard' }));
 
@@ -128,13 +123,50 @@ app.get('/items', autenticar, (req, res) =>
   res.render('items/list', { usuario: getUsuario(req), page: 'items' }));
 
 app.get('/items/create', autenticar, (req, res) =>
-  res.render('items/create', { usuario: getUsuario(req), page: 'items' }));
+  res.render('items/create', { usuario: getUsuario(req), page: 'items', erro: null }));
 
-app.get('/items/:id/edit', autenticar, (req, res) =>
-  res.render('items/edit', { usuario: getUsuario(req), page: 'items' }));
+// ── POST Criar Item ───────────────────────────────────────────
+app.post('/items', autenticar, async (req, res) => {
+  try {
+    const { titulo, descricao, categoria, estado, imagem_url } = req.body;
+    await api(req).post('/items', { titulo, descricao, categoria, estado, imagem_url });
+    res.redirect('/items');
+  } catch (err) {
+    const msg = err.response?.data?.erro || 'Erro ao cadastrar item.';
+    res.render('items/create', { usuario: getUsuario(req), page: 'items', erro: msg });
+  }
+});
 
-app.get('/items/:id', autenticar, (req, res) =>
-  res.render('items/details', { usuario: getUsuario(req), page: 'items' }));
+app.get('/items/:id/edit', autenticar, async (req, res) => {
+  try {
+    const { data: item } = await api(req).get(`/items/${req.params.id}`);
+    res.render('items/edit', { usuario: getUsuario(req), page: 'items', item, erro: null });
+  } catch {
+    res.redirect('/items');
+  }
+});
+
+// ── POST Editar Item ──────────────────────────────────────────
+app.post('/items/:id/edit', autenticar, async (req, res) => {
+  try {
+    const { titulo, descricao, categoria, estado, imagem_url } = req.body;
+    await api(req).put(`/items/${req.params.id}`, { titulo, descricao, categoria, estado, imagem_url });
+    res.redirect('/items');
+  } catch (err) {
+    const msg = err.response?.data?.erro || 'Erro ao editar item.';
+    const { data: item } = await api(req).get(`/items/${req.params.id}`).catch(() => ({ data: {} }));
+    res.render('items/edit', { usuario: getUsuario(req), page: 'items', item, erro: msg });
+  }
+});
+
+app.get('/items/:id', autenticar, async (req, res) => {
+  try {
+    const { data: item } = await api(req).get(`/items/${req.params.id}`);
+    res.render('items/details', { usuario: getUsuario(req), page: 'items', item });
+  } catch {
+    res.redirect('/items');
+  }
+});
 
 app.get('/trades', autenticar, (req, res) =>
   res.render('trades/list', { usuario: getUsuario(req), page: 'trades' }));
@@ -162,6 +194,37 @@ app.get('/profile', autenticar, (req, res) =>
 
 app.get('/settings', autenticar, (req, res) =>
   res.render('settings/index', { usuario: getUsuario(req), page: 'settings' }));
+
+// ── Explorar itens ────────────────────────────────────────────
+app.get('/explore', autenticar, (req, res) =>
+  res.render('items/explore', { usuario: getUsuario(req), page: 'explore' }));
+
+// ── Perfil público de outro usuário ──────────────────────────
+// ✅ CORRIGIDO: busca o usuário diretamente pelo ID, não depende de ter itens
+app.get('/users/:id', autenticar, async (req, res) => {
+  try {
+    const { data: dono } = await api(req).get(`/auth/users/${req.params.id}`);
+    res.render('users/public', { usuario: getUsuario(req), dono, page: '' });
+  } catch {
+    res.redirect('/explore');
+  }
+});
+
+// ── Proxy API — chamadas fetch do browser repassadas ao backend ──
+app.use('/api', autenticar, async (req, res) => {
+  try {
+    const { data } = await api(req)({
+      method: req.method,
+      url: req.path,
+      data: req.body
+    });
+    res.json(data);
+  } catch (err) {
+    const status = err.response?.status || 500;
+    const msg    = err.response?.data   || { erro: 'Erro interno' };
+    res.status(status).json(msg);
+  }
+});
 
 // ── Erros ─────────────────────────────────────────────────────
 app.use((req, res) => res.status(404).render('errors/404'));
