@@ -14,7 +14,7 @@
       <nav class="navbar">
         <span class="page-title">Meus Itens</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -36,24 +36,156 @@
           </div>
 
           <div class="items-filter">
-            <button class="filter-btn active">Todos</button>
-            <button class="filter-btn">Disponível</button>
-            <button class="filter-btn">Em negociação</button>
-            <button class="filter-btn">Doação</button>
+            <button class="filter-btn active" onclick="filtrar('ativos', this)">Todos</button>
+            <button class="filter-btn" onclick="filtrar('disponivel', this)">Disponível</button>
+            <button class="filter-btn" onclick="filtrar('negociacao', this)">Em negociação</button>
+            <button class="filter-btn" onclick="filtrar('trocado', this)">Trocados</button>
           </div>
 
-          <div class="empty-state">
+          <div id="loading" style="text-align:center; padding:40px; color:#6c757d;">
+            <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
+            <p>Carregando itens...</p>
+          </div>
+
+          <div id="items-grid" class="items-grid" style="display:none;"></div>
+
+          <div id="empty-state" class="empty-state" style="display:none;">
             <i class="fas fa-box" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
-            <p>Nenhum item cadastrado</p>
+            <p>Nenhum item aqui</p>
             <span>Cadastre seu primeiro item para começar a trocar.</span>
             <a href="/items/create" class="card-link" style="margin-top:16px;">
               Cadastrar item <i class="fas fa-arrow-right"></i>
             </a>
+          </div>
+
+          <div id="erro-state" class="empty-state" style="display:none;">
+            <i class="fas fa-circle-exclamation" style="font-size:40px; color:#e05555; margin-bottom:12px;"></i>
+            <p>Erro ao carregar itens</p>
+            <span id="erro-msg"></span>
           </div>
         </div>
 
       </div>
     </div>
   </div>
+
+  <script>
+    let todosItens = [];
+
+    const estadoLabel = { novo: 'Novo', usado: 'Usado', danificado: 'Danificado' };
+    const estadoCor   = { novo: '#5db87a', usado: '#e0a055', danificado: '#e05555' };
+
+    // ✅ status_item define o badge correto
+    function statusBadge(item) {
+      if (item.status_item === 'trocado')
+        return `<span style="color:#2d6a4f; font-weight:600;">✓ Trocado</span>`;
+      if (!item.disponivel)
+        return `<span style="color:#e0a055;">⏳ Em negociação</span>`;
+      return `<span style="color:#5db87a;">✓ Disponível</span>`;
+    }
+
+    // ✅ itens trocados não mostram botão Excluir nem Editar
+    function acoes(item) {
+      if (item.status_item === 'trocado') return `
+        <a href="/items/${item.id}" class="btn-sm">Ver</a>
+        <span style="font-size:12px; color:#2d6a4f; padding:4px 8px;">
+          <i class="fas fa-check-circle"></i> Troca concluída
+        </span>`;
+      return `
+        <a href="/items/${item.id}" class="btn-sm">Ver</a>
+        <a href="/items/${item.id}/edit" class="btn-sm btn-sm-outline">Editar</a>
+        <button class="btn-sm btn-sm-danger" onclick="deletar(${item.id}, this)">Excluir</button>`;
+    }
+
+    function renderItems(items) {
+      const grid  = document.getElementById('items-grid');
+      const empty = document.getElementById('empty-state');
+
+      if (items.length === 0) {
+        grid.style.display  = 'none';
+        empty.style.display = 'flex';
+        return;
+      }
+
+      empty.style.display = 'none';
+      grid.style.display  = 'grid';
+      grid.innerHTML = items.map(item => `
+        <div class="item-card">
+          <div class="item-card-img">
+            ${item.imagem_url
+              ? `<img src="${item.imagem_url}" alt="${item.titulo}" style="width:100%;height:100%;object-fit:cover;border-radius:10px;">`
+              : `<i class="fas fa-image" style="font-size:36px;color:#b0c4b1;"></i>`}
+          </div>
+          <div class="item-card-body">
+            <div class="item-card-title">${item.titulo}</div>
+            <div class="item-card-meta">
+              <span style="color:${estadoCor[item.estado] || '#888'}">
+                ● ${estadoLabel[item.estado] || item.estado}
+              </span>
+              ${statusBadge(item)}
+            </div>
+            ${item.descricao ? `<div class="item-card-desc">${item.descricao}</div>` : ''}
+            <div class="item-card-actions">
+              ${acoes(item)}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filtrar(tipo, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      let filtrado = todosItens;
+      // ✅ "Todos" mostra apenas não-trocados por padrão
+      if (tipo === 'ativos')     filtrado = todosItens.filter(i => i.status_item !== 'trocado');
+      if (tipo === 'disponivel') filtrado = todosItens.filter(i => i.disponivel && i.status_item === 'disponivel');
+      if (tipo === 'negociacao') filtrado = todosItens.filter(i => i.status_item === 'negociacao');
+      if (tipo === 'trocado')    filtrado = todosItens.filter(i => i.status_item === 'trocado');
+      renderItems(filtrado);
+    }
+
+    async function deletar(id, btn) {
+      if (!confirm('Tem certeza que deseja excluir este item?')) return;
+      btn.disabled = true;
+      btn.textContent = '...';
+      try {
+        const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          todosItens = todosItens.filter(i => i.id !== id);
+          // mantém o filtro ativo atual
+          const btnAtivo = document.querySelector('.filter-btn.active');
+          btnAtivo.click();
+        } else {
+          const data = await res.json();
+          alert(data.erro || 'Erro ao excluir item');
+          btn.disabled = false;
+          btn.textContent = 'Excluir';
+        }
+      } catch {
+        alert('Erro de conexão');
+        btn.disabled = false;
+        btn.textContent = 'Excluir';
+      }
+    }
+
+    async function carregarItens() {
+      try {
+        const res = await fetch('/api/items/meus');
+        if (!res.ok) throw new Error('Erro ao buscar itens');
+        todosItens = await res.json();
+        document.getElementById('loading').style.display = 'none';
+        // ✅ por padrão mostra apenas ativos (não trocados)
+        renderItems(todosItens.filter(i => i.status_item !== 'trocado'));
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('erro-state').style.display = 'flex';
+        document.getElementById('erro-msg').textContent = err.message;
+      }
+    }
+
+    carregarItens();
+  </script>
 </body>
 </html>

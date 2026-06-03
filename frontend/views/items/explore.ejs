@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorar Itens — ReUsePlus</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="layout">
+    <%- include('../partials/sidebar', { page: 'explore', usuario: usuario }) %>
+    <div class="main-content">
+      <nav class="navbar">
+        <span class="page-title">Explorar Itens</span>
+        <div class="navbar-right">
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
+          <div class="user-chip">
+            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+            <span><%= usuario.nome %></span>
+          </div>
+          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </div>
+      </nav>
+      <div class="content">
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3>Itens Disponíveis</h3>
+              <div class="panel-sub">Encontre itens de outros usuários para trocar</div>
+            </div>
+          </div>
+
+          <div class="explore-filters">
+            <div class="search-bar" style="flex:1;">
+              <i class="fas fa-search"></i>
+              <input type="text" id="busca" placeholder="Buscar por título..." oninput="filtrar()">
+            </div>
+            <select id="filtro-categoria" class="filter-select" onchange="carregarItens()">
+              <option value="">Todas as categorias</option>
+              <option value="Eletronicos">Eletrônicos</option>
+              <option value="Moveis">Móveis</option>
+              <option value="Roupas">Roupas</option>
+              <option value="Esporte">Esporte</option>
+              <option value="Livros">Livros</option>
+              <option value="Brinquedos">Brinquedos</option>
+              <option value="Outros">Outros</option>
+            </select>
+            <select id="filtro-estado" class="filter-select" onchange="carregarItens()">
+              <option value="">Qualquer estado</option>
+              <option value="novo">Novo</option>
+              <option value="usado">Usado</option>
+              <option value="danificado">Danificado</option>
+            </select>
+          </div>
+
+          <div id="loading" style="text-align:center; padding:40px; color:#6c757d;">
+            <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
+            <p>Carregando itens...</p>
+          </div>
+
+          <div id="items-grid" class="items-grid" style="display:none;"></div>
+
+          <div id="empty-state" class="empty-state" style="display:none;">
+            <i class="fas fa-box-open" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+            <p>Nenhum item encontrado</p>
+            <span>Tente outros filtros ou volte mais tarde.</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let todosItens = [];
+
+    const estadoLabel = { novo: 'Novo', usado: 'Usado', danificado: 'Danificado' };
+    const estadoCor   = { novo: '#5db87a', usado: '#e0a055', danificado: '#e05555' };
+
+    function filtrar() {
+      const busca = document.getElementById('busca').value.toLowerCase();
+      const filtrado = todosItens.filter(i =>
+        i.titulo.toLowerCase().includes(busca)
+      );
+      renderItems(filtrado);
+    }
+
+    function renderItems(items) {
+      const grid  = document.getElementById('items-grid');
+      const empty = document.getElementById('empty-state');
+
+      if (items.length === 0) {
+        grid.style.display  = 'none';
+        empty.style.display = 'flex';
+        return;
+      }
+
+      empty.style.display = 'none';
+      grid.style.display  = 'grid';
+      grid.innerHTML = items.map(item => `
+        <div class="item-card" onclick="window.location='/items/${item.id}'">
+          <div class="item-card-img">
+            ${item.imagem_url
+              ? `<img src="${item.imagem_url}" alt="${item.titulo}">`
+              : `<i class="fas fa-image" style="font-size:36px;color:#b0c4b1;"></i>`}
+          </div>
+          <div class="item-card-body">
+            <div class="item-card-title">${item.titulo}</div>
+            <div class="item-card-meta">
+              <span style="color:${estadoCor[item.estado] || '#888'}">
+                ● ${estadoLabel[item.estado] || item.estado || 'N/A'}
+              </span>
+            </div>
+            ${item.descricao ? `<div class="item-card-desc">${item.descricao}</div>` : ''}
+            <div style="margin-top:auto; padding-top:8px; display:flex; align-items:center; gap:8px;">
+              <div class="avatar" style="width:24px;height:24px;font-size:11px;">
+                ${(item.dono?.nome || 'U')[0].toUpperCase()}
+              </div>
+              <span style="font-size:12px; color:var(--text-muted);">${item.dono?.nome || 'Usuário'}</span>
+            </div>
+            <div class="item-card-actions" style="margin-top:8px;">
+              <a href="/items/${item.id}" class="btn-sm">Ver detalhes</a>
+              <a href="/users/${item.dono?.id}" class="btn-sm btn-sm-outline">Ver perfil</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function carregarItens() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('items-grid').style.display = 'none';
+      document.getElementById('empty-state').style.display = 'none';
+
+      const categoria = document.getElementById('filtro-categoria').value;
+      const estado    = document.getElementById('filtro-estado').value;
+
+      let url = '/api/items/explorar';
+      const params = new URLSearchParams();
+      if (categoria) params.append('categoria', categoria);
+      if (estado)    params.append('estado', estado);
+      if (params.toString()) url += '?' + params.toString();
+
+      try {
+        const res = await fetch(url);
+        todosItens = res.ok ? await res.json() : [];
+        document.getElementById('loading').style.display = 'none';
+        filtrar();
+      } catch {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'flex';
+      }
+    }
+
+    carregarItens();
+  </script>
+</body>
+</html>

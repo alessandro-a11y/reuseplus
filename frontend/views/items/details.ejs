@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,88 +8,322 @@
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
+
 <body>
   <div class="layout">
-    <%- include('../partials/sidebar', { page: 'items', usuario: usuario }) %>
-    <div class="main-content">
-      <nav class="navbar">
-        <span class="page-title">Detalhes do Item</span>
-        <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
-          <div class="user-chip">
-            <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
-            <span><%= usuario.nome %></span>
-          </div>
-          <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
-        </div>
-      </nav>
-      <div class="content">
-
-        <div class="bottom-grid">
-
-          <div class="panel">
-            <div class="item-image-placeholder">
-              <i class="fas fa-image"></i>
-              <span>Sem imagem</span>
-            </div>
-            <div class="item-detail-info">
-              <div class="item-status-badge disponivel">Disponível</div>
-              <h2 class="item-detail-title">Nome do Item</h2>
-              <p class="item-detail-desc">Descrição do item aparecerá aqui após integração com o backend.</p>
-              <div class="item-meta">
-                <span><i class="fas fa-tag"></i> Categoria</span>
-                <span><i class="fas fa-user"></i> Proprietário</span>
-                <span><i class="fas fa-calendar"></i> Data</span>
+    <%- include('../partials/sidebar', { page: 'items' , usuario: usuario }) %>
+      <div class="main-content">
+        <nav class="navbar">
+          <span class="page-title">
+            <a href="/items" style="color:var(--text-muted); text-decoration:none; font-weight:500;">Meus Itens</a>
+            <i class="fas fa-chevron-right" style="font-size:11px; margin:0 6px; color:var(--text-muted);"></i>
+            <%= item.titulo %>
+          </span>
+          <div class="navbar-right">
+            <button class="notif-btn" aria-label="Notificações"
+              onclick="window.location.href='/trades?filtro=pendente'">
+              <i class="fas fa-bell"></i>
+              <span class="notif-badge" id="notif-badge"></span>
+            </button>
+            <div class="user-chip" onclick="window.location.href='/profile'" style="cursor:pointer;">
+              <div class="avatar">
+                <%= usuario.nome.charAt(0).toUpperCase() %>
               </div>
+              <span>
+                <%= usuario.nome %>
+              </span>
             </div>
-            <div class="item-actions">
-              <a href="/trades/request" class="btn-invite" style="text-decoration:none; justify-content:center;">
-                <i class="fas fa-arrows-rotate"></i> Solicitar Troca
-              </a>
-              <button class="btn-secondary">
-                <i class="fas fa-heart"></i> Favoritar
-              </button>
-            </div>
+            <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
           </div>
+        </nav>
 
-          <div class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Sobre o Proprietário</h3>
-                <div class="panel-sub">Informações de quem cadastrou o item</div>
-              </div>
-            </div>
-            <div class="owner-card">
-              <div class="avatar" style="width:48px; height:48px; font-size:18px;">U</div>
-              <div>
-                <strong>Usuário</strong>
-                <div class="stars-row" style="font-size:13px;">
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <i class="fas fa-star"></i>
-                  <span style="color: var(--text-muted); margin-left:4px;">5.0</span>
+        <div class="content">
+          <div class="bottom-grid">
+
+            <div class="panel" style="grid-column: span 2;">
+
+              <div style="display:flex; gap:32px; flex-wrap:wrap;">
+
+                <div style="flex-shrink:0; width:280px;">
+                  <div class="item-image-placeholder"
+                    style="width:280px; height:280px; font-size:48px; border-radius:16px; background:var(--bg-main); border:1px solid var(--border-color);">
+                    <% if (item.imagem_url) { %>
+                      <img src="<%= item.imagem_url %>" alt="<%= item.titulo %>"
+                        style="width:100%; height:100%; object-fit:cover; border-radius:16px;"
+                        onerror="this.parentElement.innerHTML='<i class=\'fas fa-image\' style=\'font-size:48px; color:#b0c4b1;\'></i>'">
+                      <% } else { %>
+                        <i class="fas fa-image" style="font-size:48px; color:#b0c4b1;"></i>
+                        <% } %>
+                  </div>
+
+                  <div style="margin-top:12px; text-align:center;">
+                    <span class="item-status-badge <%= item.disponivel ? 'disponivel' : 'indisponivel' %>"
+                      style="font-size:13px; padding:6px 18px;">
+                      <i class="fas <%= item.disponivel ? 'fa-circle-check' : 'fa-clock' %>"
+                        style="margin-right:5px;"></i>
+                      <%= item.disponivel ? 'Disponível para troca' : 'Em negociação' %>
+                    </span>
+                  </div>
                 </div>
+
+                <div style="flex:1; min-width:220px;">
+                  <h2
+                    style="font-size:24px; font-weight:800; color:var(--text-main); margin:0 0 12px; letter-spacing:-0.5px;">
+                    <%= item.titulo %>
+                  </h2>
+
+                  <p style="font-size:14px; color:var(--text-muted); line-height:1.7; margin:0 0 20px;">
+                    <%= item.descricao || 'Sem descrição fornecida para este item.' %>
+                  </p>
+
+                  <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;">
+                    <% if (item.categoria) { %>
+                      <span
+                        style="display:inline-flex; align-items:center; gap:6px; background:var(--color-primary-light); color:var(--color-primary-dark); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;">
+                        <i class="fas fa-tag"></i>
+                        <%= item.categoria %>
+                      </span>
+                      <% } %>
+                        <span
+                          style="display:inline-flex; align-items:center; gap:6px; background:var(--bg-main); color:var(--text-muted); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--border-color);">
+                          <i class="fas fa-box"></i>
+                          <%= item.estado.charAt(0).toUpperCase() + item.estado.slice(1) %>
+                        </span>
+                        <span
+                          style="display:inline-flex; align-items:center; gap:6px; background:var(--bg-main); color:var(--text-muted); padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600; border:1px solid var(--border-color);">
+                          <i class="fas fa-calendar"></i>
+                          <%= new Date(item.createdAt).toLocaleDateString('pt-BR') %>
+                        </span>
+                  </div>
+
+                  <% if (item.dono && item.dono.id !==usuario.id) { %>
+                    <% if (item.disponivel) { %>
+                      <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <a href="/trades/request?item=<%= item.id %>" class="btn-invite"
+                          style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:12px 24px;">
+                          <i class="fas fa-arrows-rotate"></i> Solicitar Troca
+                        </a>
+                        <button class="btn-secondary" id="btn-fav" onclick="favoritar(<%= item.id %>)"
+                          style="display:inline-flex; align-items:center; gap:8px; padding:12px 20px;">
+                          <i class="fas fa-heart"></i> Favoritar
+                        </button>
+                      </div>
+                      <% } else { %>
+                        <div class="alert-erro" style="background:#fff3cd; color:#856404; border-color:#ffc107;">
+                          <i class="fas fa-clock"></i> Este item está em negociação no momento.
+                        </div>
+                        <% } %>
+                          <% } else { %>
+                            <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                              <a href="/items/<%= item.id %>/edit" class="btn-invite"
+                                style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:12px 24px;">
+                                <i class="fas fa-pen"></i> Editar Item
+                              </a>
+                              <button class="btn-sm btn-sm-danger" style="padding:12px 20px;"
+                                onclick="deletarItem(<%= item.id %>)">
+                                <i class="fas fa-trash"></i> Excluir
+                              </button>
+                            </div>
+                            <% } %>
+                </div>
+
               </div>
             </div>
 
-            <div class="panel-header" style="margin-top:24px;">
-              <div>
-                <h3>Itens Similares</h3>
-                <div class="panel-sub">Você também pode gostar</div>
-              </div>
+            <div class="panel">
+
+              <% if (item.dono) { %>
+                <div class="panel-header">
+                  <div>
+                    <h3>Proprietário</h3>
+                    <div class="panel-sub">Quem cadastrou este item</div>
+                  </div>
+                </div>
+                <!-- ✅ CORRIGIDO: card clicável leva ao perfil do dono -->
+                <a href="/users/<%= item.dono.id %>" style="text-decoration:none; color:inherit;">
+                  <div class="owner-card" style="margin-bottom:24px; cursor:pointer; transition:background 0.15s;"
+                    onmouseover="this.style.background='var(--bg-main)'"
+                    onmouseout="this.style.background=''">
+                    <div class="avatar" style="width:48px; height:48px; font-size:18px; flex-shrink:0;">
+                      <%= item.dono.nome.charAt(0).toUpperCase() %>
+                    </div>
+                    <div style="flex:1;">
+                      <strong style="font-size:15px;">
+                        <%= item.dono.nome %>
+                      </strong>
+                      <div style="color:var(--text-muted); font-size:13px; margin-top:2px;">
+                        Membro ReUsePlus
+                      </div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color:var(--text-muted); font-size:12px; flex-shrink:0;"></i>
+                  </div>
+                </a>
+                <% } %>
+
+                  <div class="panel-header">
+                    <div>
+                      <h3>Itens Similares</h3>
+                      <div class="panel-sub">Mesma categoria</div>
+                    </div>
+                  </div>
+                  <div id="similares-container">
+                    <div style="text-align:center; padding:20px; color:#aaa;">
+                      <i class="fas fa-spinner fa-spin"></i>
+                    </div>
+                  </div>
+
             </div>
-            <div class="empty-state" style="padding: 24px 0;">
-              <i class="fas fa-box" style="font-size:32px; color:#d8f3dc; margin-bottom:10px;"></i>
-              <p style="font-size:14px;">Nenhum item similar</p>
-            </div>
+
           </div>
-
         </div>
-
       </div>
-    </div>
   </div>
+
+  <div id="toast"
+    style="display:none; position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#1b4332; color:#fff; padding:12px 24px; border-radius:12px; font-size:14px; font-weight:600; z-index:9999; box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+    <i class="fas fa-check-circle" style="margin-right:8px;"></i>
+    <span id="toast-msg"></span>
+  </div>
+
+  <script>
+    // Notif badge
+    fetch('/api/notifications/count').then(r => r.json()).then(d => {
+      if (d.count > 0) {
+        const b = document.getElementById('notif-badge');
+        if (b) { b.textContent = d.count > 9 ? '9+' : d.count; b.classList.add('show'); }
+      }
+    }).catch(() => { });
+
+    // Toast helper
+    function toast(msg, ok = true) {
+      const el = document.getElementById('toast');
+      const ic = ok ? 'fa-check-circle' : 'fa-circle-exclamation';
+      el.style.background = ok ? '#1b4332' : '#c0392b';
+      el.querySelector('i').className = `fas ${ic}`;
+      document.getElementById('toast-msg').textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 3000);
+    }
+
+    // Favoritar
+    async function favoritar(id) {
+      const btn = document.getElementById('btn-fav');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/favorites/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+          toast('Item adicionado aos favoritos!');
+          btn.innerHTML = '<i class="fas fa-heart" style="color:#e05555;"></i> Favoritado';
+          btn.onclick = () => desfavoritar(id);
+        } else if (res.status === 409) {
+          toast('Item já está nos favoritos.', false);
+          btn.disabled = false;
+        } else {
+          toast(data.erro || 'Erro ao favoritar', false);
+          btn.disabled = false;
+        }
+      } catch {
+        toast('Erro de conexão', false);
+        btn.disabled = false;
+      }
+    }
+
+    async function desfavoritar(id) {
+      const btn = document.getElementById('btn-fav');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`/api/favorites/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          toast('Item removido dos favoritos.');
+          btn.innerHTML = '<i class="fas fa-heart"></i> Favoritar';
+          btn.onclick = () => favoritar(id);
+          btn.disabled = false;
+        } else {
+          toast('Erro ao remover favorito', false);
+          btn.disabled = false;
+        }
+      } catch {
+        toast('Erro de conexão', false);
+        btn.disabled = false;
+      }
+    }
+
+    // Verifica se já é favorito ao carregar
+    async function verificarFavorito(id) {
+      try {
+        const res = await fetch(`/api/favorites/check/${id}`);
+        const data = await res.json();
+        const btn = document.getElementById('btn-fav');
+        if (btn && data.favoritado) {
+          btn.innerHTML = '<i class="fas fa-heart" style="color:#e05555;"></i> Favoritado';
+          btn.onclick = () => desfavoritar(id);
+        }
+      } catch { }
+    }
+
+    verificarFavorito(<%= item.id %>);
+
+    // Deletar item
+    async function deletarItem(id) {
+      if (!confirm('Tem certeza que deseja excluir este item? Esta ação é irreversível.')) return;
+      try {
+        const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.href = '/items';
+        } else {
+          const d = await res.json();
+          toast(d.erro || 'Erro ao excluir', false);
+        }
+      } catch {
+        toast('Erro de conexão', false);
+      }
+    }
+
+    // Similares
+    async function carregarSimilares() {
+      const container = document.getElementById('similares-container');
+      try {
+        const res = await fetch('/api/items');
+        const items = await res.json();
+        const similares = items.filter(i =>
+          i.id !== <%= item.id %> &&
+          i.categoria === '<%= item.categoria %>' &&
+        i.disponivel
+        ).slice(0, 3);
+
+        if (similares.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="padding:20px 0;">
+              <i class="fas fa-box" style="font-size:28px; color:#d8f3dc; margin-bottom:8px;"></i>
+              <p style="font-size:13px;">Nenhum item similar</p>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = similares.map(i => `
+          <a href="/items/${i.id}" style="text-decoration:none; display:block; margin-bottom:10px;">
+            <div class="owner-card" style="transition:background 0.15s;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background=''">
+              <div style="width:40px;height:40px;border-radius:8px;background:var(--bg-main);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid var(--border-color);">
+                ${i.imagem_url
+            ? `<img src="${i.imagem_url}" style="width:40px;height:40px;object-fit:cover;" onerror="this.outerHTML='<i class=\\'fas fa-image\\' style=\\'color:#b0c4b1;\\'></i>'">`
+            : `<i class="fas fa-image" style="color:#b0c4b1;"></i>`}
+              </div>
+              <div style="min-width:0;">
+                <strong style="color:var(--text-main); font-size:13px; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${i.titulo}</strong>
+                <span style="color:var(--text-muted); font-size:12px;">${i.estado.charAt(0).toUpperCase() + i.estado.slice(1)}</span>
+              </div>
+              <i class="fas fa-chevron-right" style="margin-left:auto; color:var(--text-muted); font-size:11px; flex-shrink:0;"></i>
+            </div>
+          </a>
+        `).join('');
+      } catch {
+        container.innerHTML = '';
+      }
+    }
+
+    carregarSimilares();
+  </script>
 </body>
+
 </html>

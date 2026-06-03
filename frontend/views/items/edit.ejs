@@ -14,7 +14,7 @@
       <nav class="navbar">
         <span class="page-title">Editar Item</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -33,43 +33,56 @@
             <a href="/items" class="card-link"><i class="fas fa-arrow-left"></i> Voltar</a>
           </div>
 
-          <form action="/items/1" method="POST" class="item-form">
+          <% if (typeof erro !== 'undefined' && erro) { %>
+          <div class="alert-erro" style="display:flex; margin-bottom:16px;">
+            <i class="fas fa-circle-exclamation"></i> <%= erro %>
+          </div>
+          <% } %>
+
+          <form action="/items/<%= item.id %>/edit" method="POST" class="item-form">
             <div class="form-group">
               <label>Título do item</label>
-              <input type="text" name="titulo" placeholder="Ex: Bicicleta aro 29" required>
+              <input type="text" name="titulo" value="<%= item.titulo || '' %>" placeholder="Ex: Bicicleta aro 29" required>
             </div>
             <div class="form-group">
               <label>Descrição</label>
-              <textarea name="descricao" rows="4" placeholder="Descreva o estado, tamanho, cor..."></textarea>
+              <textarea name="descricao" rows="4" placeholder="Descreva o estado, tamanho, cor..."><%= item.descricao || '' %></textarea>
             </div>
             <div class="form-row">
               <div class="form-group">
                 <label>Categoria</label>
                 <select name="categoria">
                   <option value="">Selecione...</option>
-                  <option value="Eletronicos">Eletrônicos</option>
-                  <option value="Moveis">Móveis</option>
-                  <option value="Roupas">Roupas</option>
-                  <option value="Esporte">Esporte</option>
-                  <option value="Livros">Livros</option>
-                  <option value="Brinquedos">Brinquedos</option>
-                  <option value="Outros">Outros</option>
+                  <% ['Eletronicos','Moveis','Roupas','Esporte','Livros','Brinquedos','Outros'].forEach(cat => { %>
+                    <option value="<%= cat %>" <%= item.categoria === cat ? 'selected' : '' %>><%= cat %></option>
+                  <% }) %>
                 </select>
               </div>
               <div class="form-group">
-                <label>Status</label>
-                <select name="status">
-                  <option value="disponivel">Disponível para troca</option>
-                  <option value="doacao">Doação</option>
-                  <option value="negociacao">Em negociação</option>
+                <label>Estado</label>
+                <select name="estado">
+                  <option value="novo"       <%= item.estado === 'novo'       ? 'selected' : '' %>>Novo</option>
+                  <option value="usado"      <%= item.estado === 'usado'      ? 'selected' : '' %>>Usado</option>
+                  <option value="danificado" <%= item.estado === 'danificado' ? 'selected' : '' %>>Danificado</option>
                 </select>
               </div>
             </div>
+            <div class="form-group">
+              <label>URL da imagem <span style="color:#888; font-weight:400;">(opcional)</span></label>
+              <input type="url" name="imagem_url" value="<%= item.imagem_url || '' %>" placeholder="https://...">
+            </div>
+            <div class="form-group">
+              <label>Disponibilidade</label>
+              <select name="disponivel">
+                <option value="true"  <%= item.disponivel ? 'selected' : '' %>>Disponível para troca</option>
+                <option value="false" <%= !item.disponivel ? 'selected' : '' %>>Em negociação</option>
+              </select>
+            </div>
             <div class="form-row">
-              <button type="submit" class="btn-invite" style="flex:1; justify-content:center; text-decoration:none;">
+              <button type="submit" class="btn-invite" style="flex:1; justify-content:center;">
                 <i class="fas fa-check"></i> Salvar Alterações
               </button>
-              <button type="button" class="btn-danger" style="flex:0.4;">
+              <button type="button" class="btn-danger" style="flex:0.4;" onclick="deletarItem('<%= item.id %>')">
                 <i class="fas fa-trash"></i> Deletar
               </button>
             </div>
@@ -79,5 +92,23 @@
       </div>
     </div>
   </div>
+
+  <script>
+    async function deletarItem(id) {
+      if (!confirm('Tem certeza que deseja excluir este item?')) return;
+      try {
+        const res = await fetch(`/api/items/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          window.location.href = '/items';
+        } else {
+          const data = await res.json();
+          alert(data.erro || 'Erro ao excluir item');
+        }
+      } catch {
+        alert('Erro de conexão');
+      }
+    }
+  </script>
 </body>
 </html>
+

@@ -28,6 +28,10 @@ const Item = sequelize.define('Item', {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   },
+  status_item: {
+    type: DataTypes.ENUM('disponivel', 'negociacao', 'trocado'),
+    defaultValue: 'disponivel'
+  },
   imagem_url: {
     type: DataTypes.STRING,
     allowNull: true
@@ -43,6 +47,6 @@ const Item = sequelize.define('Item', {
 });
 
 Item.belongsTo(User, { foreignKey: 'usuario_id', as: 'dono' });
-User.hasMany(Item, { foreignKey: 'usuario_id', as: 'items' });
+User.hasMany(Item,   { foreignKey: 'usuario_id', as: 'items' });
 
 module.exports = Item;

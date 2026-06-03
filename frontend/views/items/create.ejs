@@ -14,7 +14,7 @@
       <nav class="navbar">
         <span class="page-title">Novo Item</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -32,6 +32,12 @@
             </div>
             <a href="/items" class="card-link"><i class="fas fa-arrow-left"></i> Voltar</a>
           </div>
+
+          <% if (erro) { %>
+          <div class="alert-erro" style="display:flex; margin-bottom:16px;">
+            <i class="fas fa-circle-exclamation"></i> <%= erro %>
+          </div>
+          <% } %>
 
           <form action="/items" method="POST" class="item-form">
             <div class="form-group">
@@ -57,12 +63,17 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>Status</label>
-                <select name="status">
-                  <option value="disponivel">Disponível para troca</option>
-                  <option value="doacao">Doação</option>
+                <label>Estado</label>
+                <select name="estado">
+                  <option value="novo">Novo</option>
+                  <option value="usado">Usado</option>
+                  <option value="danificado">Danificado</option>
                 </select>
               </div>
+            </div>
+            <div class="form-group">
+              <label>URL da imagem <span style="color:#888; font-weight:400;">(opcional)</span></label>
+              <input type="url" name="imagem_url" placeholder="https://...">
             </div>
             <button type="submit" class="btn-invite" style="width:100%; justify-content:center;">
               <i class="fas fa-check"></i> Cadastrar Item
@@ -75,3 +86,4 @@
   </div>
 </body>
 </html>
+
