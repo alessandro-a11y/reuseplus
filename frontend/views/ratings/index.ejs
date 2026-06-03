@@ -6,6 +6,39 @@
   <title>Avaliações — ReUsePlus</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .stars-row { color: #f4a723; font-size: 18px; margin: 6px 0; }
+    .stars-row.sm { font-size: 13px; }
+    .score-big { font-size: 56px; font-weight: 800; color: #1b4332; line-height: 1; }
+    .score-label { font-size: 14px; color: #666; margin-top: 4px; }
+    .score-count { font-size: 13px; color: #aaa; margin-top: 2px; }
+    .rating-score-card { text-align: center; padding: 32px 24px; }
+    .rating-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; color: #555; }
+    .rating-bar { flex: 1; height: 8px; background: #f0f0f0; border-radius: 99px; overflow: hidden; }
+    .rating-bar-fill { height: 100%; background: #f4a723; border-radius: 99px; transition: width 0.6s ease; }
+    .ratings-summary { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-bottom: 20px; }
+    .review-card { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+    .review-card:last-child { border-bottom: none; }
+    .review-avatar { width: 40px; height: 40px; border-radius: 50%; background: #2d6a4f; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+    .review-body { flex: 1; }
+    .review-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+    .review-nome { font-weight: 700; font-size: 14px; color: #1b4332; }
+    .review-data { font-size: 12px; color: #aaa; margin-left: auto; }
+    .review-comentario { font-size: 13px; color: #555; margin-top: 4px; line-height: 1.5; }
+    .pending-trade { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
+    .pending-trade:last-child { border-bottom: none; }
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border-radius:20px; padding:32px; max-width:440px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation: modalIn 0.25s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+    .star-selector { display:flex; gap:8px; justify-content:center; margin:16px 0; font-size:32px; cursor:pointer; }
+    .star-selector i { color:#ddd; transition:color 0.15s; }
+    .star-selector i.active { color:#f4a723; }
+    .btn-full { width:100%; padding:12px; background:#2d6a4f; color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:600; cursor:pointer; transition:background 0.15s; }
+    .btn-full:hover { background:#1b4332; }
+    .btn-full:disabled { background:#aaa; cursor:not-allowed; }
+    textarea.input-field { width:100%; padding:10px 14px; border:1px solid #ddd; border-radius:10px; font-size:14px; resize:vertical; min-height:80px; font-family:inherit; box-sizing:border-box; margin-top:8px; }
+  </style>
 </head>
 <body>
   <div class="layout">
@@ -14,7 +47,7 @@
       <nav class="navbar">
         <span class="page-title">Avaliações</span>
         <div class="navbar-right">
-          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
@@ -26,50 +59,32 @@
 
         <div class="ratings-summary">
           <div class="panel rating-score-card">
-            <div class="score-big">5.0</div>
-            <div class="stars-row">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
+            <div class="score-big" id="media">-</div>
+            <div class="stars-row" id="stars-media">
+              <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>
             </div>
             <div class="score-label">Sua avaliação média</div>
-            <div class="score-count">0 avaliações recebidas</div>
+            <div class="score-count" id="total-label">Carregando...</div>
           </div>
 
           <div class="panel rating-bars-card">
-            <div class="panel-header">
-              <h3>Distribuição</h3>
-            </div>
-            <div class="rating-bar-row">
-              <span>5 <i class="fas fa-star"></i></span>
-              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
-              <span>0</span>
-            </div>
-            <div class="rating-bar-row">
-              <span>4 <i class="fas fa-star"></i></span>
-              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
-              <span>0</span>
-            </div>
-            <div class="rating-bar-row">
-              <span>3 <i class="fas fa-star"></i></span>
-              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
-              <span>0</span>
-            </div>
-            <div class="rating-bar-row">
-              <span>2 <i class="fas fa-star"></i></span>
-              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
-              <span>0</span>
-            </div>
-            <div class="rating-bar-row">
-              <span>1 <i class="fas fa-star"></i></span>
-              <div class="rating-bar"><div class="rating-bar-fill" style="width:0%"></div></div>
-              <span>0</span>
-            </div>
+            <div class="panel-header"><h3>Distribuição</h3></div>
+            <div id="barras"></div>
           </div>
         </div>
 
+        <!-- Trocas pendentes de avaliação -->
+        <div class="panel" id="panel-pendentes" style="margin-bottom:20px; display:none;">
+          <div class="panel-header">
+            <div>
+              <h3>Avaliar Parceiros</h3>
+              <div class="panel-sub">Trocas concluídas aguardando sua avaliação</div>
+            </div>
+          </div>
+          <div id="lista-pendentes"></div>
+        </div>
+
+        <!-- Avaliações recebidas -->
         <div class="panel">
           <div class="panel-header">
             <div>
@@ -77,15 +92,203 @@
               <div class="panel-sub">O que outros usuários dizem sobre você</div>
             </div>
           </div>
-          <div class="empty-state">
-            <i class="fas fa-star" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
-            <p>Nenhuma avaliação ainda</p>
-            <span>Complete trocas para receber avaliações.</span>
+          <div id="lista-avaliacoes">
+            <div style="text-align:center; padding:32px; color:#aaa;">
+              <i class="fas fa-spinner fa-spin" style="font-size:24px;"></i>
+            </div>
           </div>
         </div>
 
       </div>
     </div>
   </div>
+
+  <!-- Modal de avaliação -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal-box">
+      <h3 style="margin:0 0 4px; color:#1b4332;">Avaliar parceiro</h3>
+      <p style="font-size:14px; color:#666; margin:0 0 8px;" id="modal-sub">Troca #<span id="modal-trade-id"></span></p>
+      <div class="star-selector" id="star-selector">
+        <i class="far fa-star" data-v="1"></i>
+        <i class="far fa-star" data-v="2"></i>
+        <i class="far fa-star" data-v="3"></i>
+        <i class="far fa-star" data-v="4"></i>
+        <i class="far fa-star" data-v="5"></i>
+      </div>
+      <textarea class="input-field" id="modal-comentario" placeholder="Comentário opcional..."></textarea>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn-full" style="background:#f0f0f0; color:#333;" onclick="fecharModal()">Cancelar</button>
+        <button class="btn-full" id="btn-enviar" onclick="enviarAvaliacao()" disabled>Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let notaSelecionada = 0;
+    let tradeIdAtual = null;
+
+    // ── Estrelas do modal ───────────────────────────────────
+    document.querySelectorAll('#star-selector i').forEach(star => {
+      star.addEventListener('mouseover', () => destacarEstrelas(+star.dataset.v));
+      star.addEventListener('mouseout',  () => destacarEstrelas(notaSelecionada));
+      star.addEventListener('click', () => {
+        notaSelecionada = +star.dataset.v;
+        destacarEstrelas(notaSelecionada);
+        document.getElementById('btn-enviar').disabled = false;
+      });
+    });
+
+    function destacarEstrelas(n) {
+      document.querySelectorAll('#star-selector i').forEach((s, i) => {
+        s.className = i < n ? 'fas fa-star' : 'far fa-star';
+        s.style.color = i < n ? '#f4a723' : '#ddd';
+      });
+    }
+
+    function starsHtml(nota, sm = false) {
+      let h = '';
+      for (let i = 1; i <= 5; i++)
+        h += `<i class="${i <= nota ? 'fas' : 'far'} fa-star"></i>`;
+      return `<span class="stars-row${sm ? ' sm' : ''}" style="color:#f4a723;">${h}</span>`;
+    }
+
+    function abrirModal(tradeId, titulo) {
+      tradeIdAtual = tradeId;
+      notaSelecionada = 0;
+      destacarEstrelas(0);
+      document.getElementById('modal-trade-id').textContent = tradeId;
+      document.getElementById('modal-sub').innerHTML = `Avaliando parceiro da troca: <strong>${titulo}</strong>`;
+      document.getElementById('modal-comentario').value = '';
+      document.getElementById('btn-enviar').disabled = true;
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+
+    function fecharModal() {
+      document.getElementById('modal-overlay').classList.remove('open');
+    }
+
+    document.getElementById('modal-overlay').addEventListener('click', e => {
+      if (e.target === e.currentTarget) fecharModal();
+    });
+
+    async function enviarAvaliacao() {
+      const btn = document.getElementById('btn-enviar');
+      btn.disabled = true;
+      btn.textContent = 'Enviando...';
+      try {
+        const res = await fetch('/api/ratings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            trade_id:   tradeIdAtual,
+            nota:       notaSelecionada,
+            comentario: document.getElementById('modal-comentario').value.trim() || null
+          })
+        });
+        if (res.ok) {
+          fecharModal();
+          carregarDados();
+        } else {
+          const d = await res.json();
+          alert(d.erro || 'Erro ao enviar avaliação');
+          btn.disabled = false;
+          btn.textContent = 'Enviar';
+        }
+      } catch {
+        alert('Erro de conexão');
+        btn.disabled = false;
+        btn.textContent = 'Enviar';
+      }
+    }
+
+    async function carregarDados() {
+      try {
+        const [resMinha, resTrocas] = await Promise.all([
+          fetch('/api/ratings/me'),
+          fetch('/api/trades')
+        ]);
+
+        const { media, total, distribuicao, ratings } = await resMinha.json();
+        const trocas = resTrocas.ok ? await resTrocas.json() : [];
+
+        // Score
+        document.getElementById('media').textContent     = total > 0 ? media : '—';
+        document.getElementById('total-label').textContent = `${total} avaliação${total !== 1 ? 'ões' : ''} recebida${total !== 1 ? 's' : ''}`;
+        document.getElementById('stars-media').innerHTML = starsHtml(Math.round(+media));
+
+        // Barras
+        const maxBar = Math.max(...Object.values(distribuicao), 1);
+        document.getElementById('barras').innerHTML = [5,4,3,2,1].map(n => `
+          <div class="rating-bar-row">
+            <span style="min-width:32px;">${n} <i class="fas fa-star" style="color:#f4a723;font-size:11px;"></i></span>
+            <div class="rating-bar">
+              <div class="rating-bar-fill" style="width:${(distribuicao[n]/maxBar*100).toFixed(0)}%"></div>
+            </div>
+            <span style="min-width:20px; text-align:right;">${distribuicao[n]}</span>
+          </div>
+        `).join('');
+
+        // Trocas pendentes de avaliação
+        const concluidas = trocas.filter(t => t.status === 'concluida');
+        const pendentes  = [];
+        for (const t of concluidas) {
+          const r = await fetch(`/api/ratings/pode-avaliar/${t.id}`);
+          const d = await r.json();
+          if (d.pode) pendentes.push(t);
+        }
+
+        const panelPendentes = document.getElementById('panel-pendentes');
+        if (pendentes.length > 0) {
+          panelPendentes.style.display = 'block';
+          document.getElementById('lista-pendentes').innerHTML = pendentes.map(t => `
+            <div class="pending-trade">
+              <div>
+                <div style="font-weight:700; font-size:14px;">
+                  ${t.itemOferecido?.titulo || 'Item'} ↔ ${t.itemDesejado?.titulo || 'Item'}
+                </div>
+                <div style="font-size:12px; color:#aaa; margin-top:2px;">
+                  Troca #${t.id} · ${new Date(t.updatedAt).toLocaleDateString('pt-BR')}
+                </div>
+              </div>
+              <button class="btn-sm" style="background:#2d6a4f; color:#fff; border:none; cursor:pointer;"
+                onclick="abrirModal(${t.id}, '${(t.itemOferecido?.titulo || 'Item').replace(/'/g,"\\'")} ↔ ${(t.itemDesejado?.titulo || 'Item').replace(/'/g,"\\'")}')">
+                <i class="fas fa-star" style="margin-right:4px;"></i> Avaliar
+              </button>
+            </div>
+          `).join('');
+        }
+
+        // Lista de avaliações recebidas
+        const listaEl = document.getElementById('lista-avaliacoes');
+        if (ratings.length === 0) {
+          listaEl.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-star" style="font-size:40px; color:#d8f3dc; margin-bottom:12px;"></i>
+              <p>Nenhuma avaliação ainda</p>
+              <span>Complete trocas para receber avaliações.</span>
+            </div>`;
+        } else {
+          listaEl.innerHTML = ratings.map(r => `
+            <div class="review-card">
+              <div class="review-avatar">${r.avaliador.nome.charAt(0).toUpperCase()}</div>
+              <div class="review-body">
+                <div class="review-header">
+                  <span class="review-nome">${r.avaliador.nome}</span>
+                  ${starsHtml(r.nota, true)}
+                  <span class="review-data">${new Date(r.createdAt).toLocaleDateString('pt-BR')}</span>
+                </div>
+                ${r.comentario ? `<div class="review-comentario">${r.comentario}</div>` : ''}
+              </div>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    carregarDados();
+  </script>
 </body>
 </html>
