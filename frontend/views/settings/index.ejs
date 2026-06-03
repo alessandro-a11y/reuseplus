@@ -14,7 +14,7 @@
       <nav class="navbar">
         <span class="page-title">Configurações</span>
         <div class="navbar-right">
-          <button class="notif-btn"><i class="fas fa-bell"></i><span class="dot"></span></button>
+          <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>

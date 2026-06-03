@@ -12,58 +12,59 @@
       <i class="fas fa-house"></i>
       <span class="nav-text">Dashboard</span>
     </a>
-
+    <a href="/explore" class="nav-item <%= typeof page !== 'undefined' && page === 'explore' ? 'active' : '' %>">
+      <i class="fas fa-compass"></i>
+      <span class="nav-text">Explorar</span>
+    </a>
     <a href="/items" class="nav-item <%= typeof page !== 'undefined' && page === 'items' ? 'active' : '' %>">
       <i class="fas fa-box"></i>
       <span class="nav-text">Meus Itens</span>
     </a>
-
     <a href="/trades" class="nav-item <%= typeof page !== 'undefined' && page === 'trades' ? 'active' : '' %>">
       <i class="fas fa-arrows-rotate"></i>
       <span class="nav-text">Trocas</span>
     </a>
-
     <a href="/favorites" class="nav-item <%= typeof page !== 'undefined' && page === 'favorites' ? 'active' : '' %>">
       <i class="fas fa-heart"></i>
       <span class="nav-text">Favoritos</span>
     </a>
-
     <a href="/messages" class="nav-item <%= typeof page !== 'undefined' && page === 'messages' ? 'active' : '' %>">
       <i class="fas fa-comment-dots"></i>
       <span class="nav-text">Mensagens</span>
-      <span class="nav-badge">3</span>
+      <!-- Badge dinâmico: começa oculto, JS preenche o valor -->
+      <span class="nav-badge" id="sidebar-msg-badge" style="display:none;"></span>
     </a>
-
     <a href="/ratings" class="nav-item <%= typeof page !== 'undefined' && page === 'ratings' ? 'active' : '' %>">
       <i class="fas fa-star"></i>
       <span class="nav-text">Avaliações</span>
     </a>
-
     <a href="/impact" class="nav-item <%= typeof page !== 'undefined' && page === 'impact' ? 'active' : '' %>">
       <i class="fas fa-leaf"></i>
       <span class="nav-text">Impacto Ambiental</span>
     </a>
-
     <a href="/profile" class="nav-item <%= typeof page !== 'undefined' && page === 'profile' ? 'active' : '' %>">
       <i class="fas fa-user"></i>
       <span class="nav-text">Perfil</span>
     </a>
-
     <a href="/settings" class="nav-item <%= typeof page !== 'undefined' && page === 'settings' ? 'active' : '' %>">
       <i class="fas fa-gear"></i>
       <span class="nav-text">Configurações</span>
     </a>
   </nav>
 
-  <div class="sidebar-user">
+  <a href="/profile" class="sidebar-user"
+     style="text-decoration:none; display:flex; align-items:center; gap:10px; cursor:pointer;">
     <div class="s-avatar">
       <%= typeof usuario !== 'undefined' ? usuario.nome.charAt(0).toUpperCase() : 'U' %>
     </div>
     <div class="s-user-info">
-      <span class="s-user-name"><%= typeof usuario !== 'undefined' ? usuario.nome : 'Usuário' %></span>
+      <span class="s-user-name">
+        <%= typeof usuario !== 'undefined' ? usuario.nome : 'Usuário' %>
+      </span>
       <span class="s-user-role">Membro</span>
     </div>
-  </div>
+    <i class="fas fa-chevron-right" style="margin-left:auto; font-size:11px; color:#aaa; flex-shrink:0;"></i>
+  </a>
 
   <div class="sidebar-footer">
     <a href="/logout" class="logout-item">
@@ -73,3 +74,49 @@
   </div>
 
 </aside>
+
+<script>
+  /* ══════════════════════════════════════════
+     Badge de mensagens não lidas
+     Roda em TODAS as páginas que incluem a sidebar
+     ══════════════════════════════════════════ */
+  async function atualizarBadgesSidebar() {
+    try {
+      const res = await fetch('/api/messages/count/nao-lidas');
+      if (!res.ok) return;
+      const { count } = await res.json();
+
+      // ── Badge da sidebar ──
+      const sidebarBadge = document.getElementById('sidebar-msg-badge');
+      if (sidebarBadge) {
+        if (count > 0) {
+          sidebarBadge.textContent = count > 99 ? '99+' : count;
+          sidebarBadge.style.display = 'flex';
+        } else {
+          sidebarBadge.style.display = 'none';
+        }
+      }
+
+      // ── Badge do sino na navbar (presente em todas as páginas) ──
+      const sinoBadge = document.getElementById('notif-badge');
+      if (sinoBadge) {
+        if (count > 0) {
+          sinoBadge.textContent = count > 9 ? '9+' : count;
+          sinoBadge.classList.add('show');
+        } else {
+          sinoBadge.classList.remove('show');
+        }
+      }
+
+    } catch (_) {}
+  }
+
+  // Roda ao carregar a página
+  atualizarBadgesSidebar();
+
+  // Atualiza a cada 15s em todas as páginas
+  setInterval(atualizarBadgesSidebar, 15000);
+
+  // Expõe globalmente para a página de mensagens chamar após ler uma conversa
+  window.atualizarBadgesSidebar = atualizarBadgesSidebar;
+</script>

@@ -4,31 +4,211 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — ReUsePlus</title>
-  <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ── Sino de notificação ─────────────────────────── */
+    .notif-btn {
+      position: relative;
+    }
+    .notif-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #e05555;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 99px;
+      min-width: 16px;
+      height: 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      line-height: 1;
+    }
+    .notif-badge.show { display: flex; }
+
+    /* ── User chip — clicável ────────────────────────── */
+    .user-chip {
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+    .user-chip-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      min-width: 180px;
+      z-index: 999;
+      overflow: hidden;
+    }
+    .user-chip-menu.open { display: block; }
+    .user-chip-menu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #333;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .user-chip-menu a:hover { background: #f5f5f5; }
+    .user-chip-menu a i { width: 16px; color: #666; }
+
+    /* ── Dicas sustentáveis — interativas ───────────── */
+    .tip-item {
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .tip-item:hover {
+      background: rgba(45,106,79,0.06);
+      transform: translateX(3px);
+    }
+    .tip-item:active { transform: scale(0.98); }
+
+    /* ── Modal de dica ───────────────────────────────── */
+    .tip-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .tip-modal-overlay.open { display: flex; }
+    .tip-modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 420px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalIn 0.25s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform: scale(0.85) translateY(20px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .tip-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: #f0f0f0;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      transition: background 0.15s;
+    }
+    .tip-modal-close:hover { background: #e0e0e0; }
+    .tip-modal-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: #d8f3dc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #2d6a4f;
+      margin-bottom: 16px;
+    }
+    .tip-modal h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1b4332;
+      margin: 0 0 8px;
+    }
+    .tip-modal p {
+      font-size: 14px;
+      color: #555;
+      line-height: 1.6;
+      margin: 0 0 16px;
+    }
+    .tip-modal ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 20px;
+    }
+    .tip-modal ul li {
+      font-size: 13px;
+      color: #444;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tip-modal ul li:last-child { border-bottom: none; }
+    .tip-modal ul li::before {
+      content: '✓';
+      color: #2d6a4f;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tip-modal-action {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #2d6a4f;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .tip-modal-action:hover { background: #1b4332; }
+
+    /* ── Dot → badge real ────────────────────────────── */
+    .dot { display: none; }
+  </style>
 </head>
 <body>
   <div class="layout">
-    <%- include('../partials/sidebar') %>
+    <%- include('../partials/sidebar', { page: 'dashboard', usuario: usuario }) %>
 
-    <div class="main-content" id="main-content">
-
+    <div class="main-content">
       <nav class="navbar">
         <span class="page-title">Olá, <%= usuario.nome %>!</span>
         <div class="navbar-right">
-          
-          <button class="notif-btn" aria-label="Notificações">
+
+          <button class="notif-btn" aria-label="Notificações" onclick="abrirNotificacoes()">
             <i class="fas fa-bell"></i>
-            <span class="dot"></span>
+            <span class="notif-badge" id="notif-badge"></span>
           </button>
-          
-          <div class="user-chip">
+
+          <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
             <span><%= usuario.nome %></span>
             <i class="fas fa-chevron-down user-chip-arrow"></i>
+            <div class="user-chip-menu" id="user-chip-menu">
+              <a href="/profile"><i class="fas fa-user"></i> Meu perfil</a>
+              <a href="/settings"><i class="fas fa-gear"></i> Configurações</a>
+              <a href="/impact"><i class="fas fa-leaf"></i> Impacto ambiental</a>
+              <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+            </div>
           </div>
-          
+
           <a href="/logout" class="btn-logout">
             <i class="fas fa-sign-out-alt"></i> Sair
           </a>
@@ -42,63 +222,61 @@
             <h2>Olá, <%= usuario.nome %>!</h2>
             <p>Bem-vindo ao ReUsePlus — reutilize, troque e reaproveite materiais.</p>
           </div>
-          
           <div class="welcome-stats">
             <div class="welcome-stat">
               <div class="stat-icon"><i class="fas fa-leaf"></i></div>
               <div class="stat-label">Impacto positivo</div>
-              <div class="stat-value">0 <span class="stat-unit">kg</span></div>
+              <div class="stat-value" id="stat-co2">0 <span class="stat-unit">kg</span></div>
               <div class="stat-sub">de CO₂ evitado</div>
             </div>
             <div class="welcome-stat">
               <div class="stat-icon"><i class="fas fa-arrows-rotate"></i></div>
               <div class="stat-label">Sua contribuição</div>
-              <div class="stat-value">0 <span class="stat-unit">trocas</span></div>
+              <div class="stat-value" id="stat-trocas">0 <span class="stat-unit">trocas</span></div>
               <div class="stat-sub">realizadas</div>
             </div>
           </div>
         </div>
 
         <div class="cards">
-          
           <div class="card">
             <div class="card-top">
               <h3>Meus Itens</h3>
               <div class="card-icon"><i class="fas fa-box"></i></div>
             </div>
-            <div class="card-number">0</div>
+            <div class="card-number" id="card-itens">-</div>
             <div class="card-sub">cadastrados</div>
             <a href="/items" class="card-link">Ver meus itens <i class="fas fa-arrow-right"></i></a>
           </div>
-          
+
           <div class="card">
             <div class="card-top">
               <h3>Trocas Ativas</h3>
               <div class="card-icon"><i class="fas fa-arrows-rotate"></i></div>
             </div>
-            <div class="card-number">0</div>
+            <div class="card-number" id="card-trocas-ativas">-</div>
             <div class="card-sub">em andamento</div>
             <a href="/trades" class="card-link">Ver trocas <i class="fas fa-arrow-right"></i></a>
           </div>
-          
+
           <div class="card">
             <div class="card-top">
               <h3>Trocas Concluídas</h3>
               <div class="card-icon"><i class="fas fa-circle-check"></i></div>
             </div>
-            <div class="card-number">0</div>
+            <div class="card-number" id="card-trocas-concluidas">-</div>
             <div class="card-sub">concluídas</div>
             <a href="/trades/history" class="card-link">Ver histórico <i class="fas fa-arrow-right"></i></a>
           </div>
-          
+
           <div class="card">
             <div class="card-top">
               <h3>Itens Disponíveis</h3>
               <div class="card-icon"><i class="fas fa-bag-shopping"></i></div>
             </div>
-            <div class="card-number">0</div>
+            <div class="card-number" id="card-disponiveis">-</div>
             <div class="card-sub">disponíveis</div>
-            <a href="/items/list" class="card-link">Explorar itens <i class="fas fa-arrow-right"></i></a>
+            <a href="/items" class="card-link">Explorar itens <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
 
@@ -107,50 +285,14 @@
           <div class="panel">
             <div class="panel-header">
               <div>
-                <h3>Resumo de Atividades</h3>
-                <div class="panel-sub">Acompanhe sua evolução na plataforma</div>
+                <h3>Atividades Recentes</h3>
+                <div class="panel-sub">Seus últimos itens cadastrados</div>
               </div>
-              <span class="badge-timeline">Últimos 7 dias</span>
+              <a href="/items">Ver todos</a>
             </div>
-
-            <div class="chart-area">
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">16/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">17/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">18/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">19/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">20/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">21/05</span></div>
-              <div class="chart-bar" style="height: 6px;"><span class="bar-label">22/05</span></div>
-            </div>
-
-            <div class="stats-mini">
-              <div class="stat-mini">
-                <i class="fas fa-eye"></i>
-                <div class="mini-info">
-                  <span class="mini-label">Visualizações</span>
-                  <span class="mini-value">0</span>
-                </div>
-              </div>
-              <div class="stat-mini">
-                <i class="fas fa-user-friends"></i>
-                <div class="mini-info">
-                  <span class="mini-label">Contatos</span>
-                  <span class="mini-value">0</span>
-                </div>
-              </div>
-              <div class="stat-mini">
-                <i class="fas fa-comment"></i>
-                <div class="mini-info">
-                  <span class="mini-label">Mensagens</span>
-                  <span class="mini-value">0</span>
-                </div>
-              </div>
-              <div class="stat-mini">
-                <i class="fas fa-star"></i>
-                <div class="mini-info">
-                  <span class="mini-label">Avaliações</span>
-                  <span class="mini-value">0</span>
-                </div>
+            <div id="atividades-lista">
+              <div style="text-align:center; padding:20px; color:#aaa;">
+                <i class="fas fa-spinner fa-spin"></i> Carregando...
               </div>
             </div>
           </div>
@@ -158,15 +300,15 @@
           <div class="panel">
             <div class="panel-header">
               <div>
-                <h3>Atividades Recentes</h3>
-                <div class="panel-sub">Veja o que aconteceu recentemente</div>
+                <h3>Trocas Recentes</h3>
+                <div class="panel-sub">Últimas solicitações</div>
               </div>
-              <a href="#">Ver todas</a>
+              <a href="/trades">Ver todas</a>
             </div>
-            
-            <div class="empty-state">
-              <p>Nenhuma atividade recente</p>
-              <span>Suas atividades aparecerão aqui.</span>
+            <div id="trocas-lista">
+              <div style="text-align:center; padding:20px; color:#aaa;">
+                <i class="fas fa-spinner fa-spin"></i> Carregando...
+              </div>
             </div>
           </div>
 
@@ -174,9 +316,8 @@
             <div class="panel-header">
               <h3>Dicas Sustentáveis</h3>
             </div>
-            
             <div class="tips-list">
-              <div class="tip-item">
+              <div class="tip-item" onclick="abrirDica('reutilize')">
                 <div class="tip-ic"><i class="fas fa-recycle"></i></div>
                 <div class="tip-text">
                   <strong>Reutilize</strong>
@@ -184,8 +325,7 @@
                 </div>
                 <i class="fas fa-chevron-right"></i>
               </div>
-              
-              <div class="tip-item">
+              <div class="tip-item" onclick="abrirDica('reduza')">
                 <div class="tip-ic"><i class="fas fa-cart-shopping"></i></div>
                 <div class="tip-text">
                   <strong>Reduza</strong>
@@ -193,8 +333,7 @@
                 </div>
                 <i class="fas fa-chevron-right"></i>
               </div>
-              
-              <div class="tip-item">
+              <div class="tip-item" onclick="abrirDica('recicle')">
                 <div class="tip-ic"><i class="fas fa-trash-can"></i></div>
                 <div class="tip-text">
                   <strong>Recicle</strong>
@@ -202,8 +341,7 @@
                 </div>
                 <i class="fas fa-chevron-right"></i>
               </div>
-              
-              <div class="tip-item">
+              <div class="tip-item" onclick="abrirDica('compartilhe')">
                 <div class="tip-ic"><i class="fas fa-handshake"></i></div>
                 <div class="tip-text">
                   <strong>Compartilhe</strong>
@@ -212,11 +350,10 @@
                 <i class="fas fa-chevron-right"></i>
               </div>
             </div>
-
             <div class="invite-banner">
               <h4>Convide amigos</h4>
               <p>Quanto mais, melhor!<br>Convide amigos e faça parte de uma comunidade mais sustentável.</p>
-              <button class="btn-invite">Convidar agora</button>
+              <button class="btn-invite" onclick="copiarLink()">Convidar agora</button>
             </div>
           </div>
 
@@ -226,5 +363,209 @@
       </div>
     </div>
   </div>
+
+  <div class="tip-modal-overlay" id="tip-modal-overlay" onclick="fecharDica(event)">
+    <div class="tip-modal" id="tip-modal">
+      <button class="tip-modal-close" onclick="fecharDicaForce()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="tip-modal-icon" id="tip-modal-icon"></div>
+      <h3 id="tip-modal-titulo"></h3>
+      <p id="tip-modal-desc"></p>
+      <ul id="tip-modal-lista"></ul>
+      <a id="tip-modal-action" class="tip-modal-action" href="#">Ver mais no ReUsePlus</a>
+    </div>
+  </div>
+
+  <script>
+    // ── Dados das dicas ─────────────────────────────────────
+    const DICAS = {
+      reutilize: {
+        icon: '<i class="fas fa-recycle"></i>',
+        titulo: 'Reutilize',
+        desc: 'Antes de descartar, pense: esse item pode ter uma nova vida! Reutilizar reduz o lixo, economiza recursos naturais e ainda pode gerar trocas incríveis na plataforma.',
+        lista: [
+          'Cadastre itens que não usa mais',
+          'Conserte antes de jogar fora',
+          'Troque com vizinhos e amigos',
+          'Doe para quem precisa'
+        ],
+        link: '/items/create'
+      },
+      reduza: {
+        icon: '<i class="fas fa-cart-shopping"></i>',
+        titulo: 'Reduza',
+        desc: 'Consumo consciente começa com a pergunta: eu realmente preciso disso? Reduzir é o primeiro R da sustentabilidade e o mais impactante.',
+        lista: [
+          'Faça listas antes de comprar',
+          'Prefira qualidade a quantidade',
+          'Evite embalagens descartáveis',
+          'Compre local e sazonal'
+        ],
+        link: '/impact'
+      },
+      recicle: {
+        icon: '<i class="fas fa-trash-can"></i>',
+        titulo: 'Recicle',
+        desc: 'Separar corretamente os resíduos faz toda a diferença! Materiais reciclados voltam à cadeia produtiva e economizam energia e água.',
+        lista: [
+          'Papel, plástico, vidro e metal separados',
+          'Limpe as embalagens antes de descartar',
+          'Encontre pontos de coleta perto de você',
+          'Eletrônicos têm descarte especial'
+        ],
+        link: '/impact'
+      },
+      compartilhe: {
+        icon: '<i class="fas fa-handshake"></i>',
+        titulo: 'Compartilhe',
+        desc: 'Uma comunidade que troca cresce junta! Compartilhar itens, conhecimento e boas práticas multiplica o impacto de cada pessoa.',
+        lista: [
+          'Convide amigos para o ReUsePlus',
+          'Avalie seus parceiros de troca',
+          'Compartilhe dicas nas redes sociais',
+          'Incentive o consumo colaborativo'
+        ],
+        link: '/trades'
+      }
+    };
+
+    function abrirDica(chave) {
+      const d = DICAS[chave];
+      if (!d) return;
+      document.getElementById('tip-modal-icon').innerHTML = d.icon;
+      document.getElementById('tip-modal-titulo').textContent = d.titulo;
+      document.getElementById('tip-modal-desc').textContent = d.desc;
+      document.getElementById('tip-modal-lista').innerHTML = d.lista.map(i => `<li>${i}</li>`).join('');
+      document.getElementById('tip-modal-action').href = d.link;
+      document.getElementById('tip-modal-overlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function fecharDica(e) {
+      if (e.target === document.getElementById('tip-modal-overlay')) fecharDicaForce();
+    }
+    function fecharDicaForce() {
+      document.getElementById('tip-modal-overlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharDicaForce(); });
+
+    // ── User chip menu ──────────────────────────────────────
+    function toggleUserMenu(e) {
+      e.stopPropagation();
+      document.getElementById('user-chip-menu').classList.toggle('open');
+    }
+    document.addEventListener('click', () => {
+      document.getElementById('user-chip-menu').classList.remove('open');
+    });
+
+    // ── Abrir notificações ──────────────────────────────────
+    function abrirNotificacoes() {
+      window.location.href = '/trades?filtro=pendente';
+    }
+
+    // ── Copiar link de convite ──────────────────────────────
+    function copiarLink() {
+      const url = window.location.origin;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('.btn-invite');
+        btn.textContent = 'Link copiado!';
+        setTimeout(() => { btn.textContent = 'Convidar agora'; }, 2000);
+      }).catch(() => {
+        alert('Copie o link: ' + window.location.origin);
+      });
+    }
+
+    // ── Carregar dados do dashboard ─────────────────────────
+    async function carregarDashboard() {
+      try {
+        const [resItens, resTrocas, resNotif] = await Promise.all([
+          fetch('/api/items/meus'),
+          fetch('/api/trades'),
+          fetch('/api/notifications/count')
+        ]);
+
+        const itens   = resItens.ok   ? await resItens.json()   : [];
+        const trocas  = resTrocas.ok  ? await resTrocas.json()  : [];
+        const notifData = resNotif.ok ? await resNotif.json()   : { count: 0 };
+
+        // Badge de notificação
+        const badge = document.getElementById('notif-badge');
+        if (notifData.count > 0) {
+          badge.textContent = notifData.count > 9 ? '9+' : notifData.count;
+          badge.classList.add('show');
+        }
+
+        // Cards
+        const disponiveis       = itens.filter(i => i.disponivel).length;
+        const trocasAtivas      = trocas.filter(t => t.status === 'pendente' || t.status === 'aceita').length;
+        const trocasConcluidas  = trocas.filter(t => t.status === 'concluida').length;
+
+        document.getElementById('card-itens').textContent            = itens.length;
+        document.getElementById('card-disponiveis').textContent      = disponiveis;
+        document.getElementById('card-trocas-ativas').textContent    = trocasAtivas;
+        document.getElementById('card-trocas-concluidas').textContent = trocasConcluidas;
+
+        // CO₂ evitado — 2.3 kg por troca concluída (média de pesquisa)
+        const co2 = (trocasConcluidas * 2.3).toFixed(1);
+        document.getElementById('stat-co2').innerHTML = `${co2} <span class="stat-unit">kg</span>`;
+        document.getElementById('stat-trocas').innerHTML = `${trocasConcluidas} <span class="stat-unit">trocas</span>`;
+
+        // Atividades recentes — últimos 3 itens
+        const atividadesEl = document.getElementById('atividades-lista');
+        if (itens.length === 0) {
+          atividadesEl.innerHTML = `<div class="empty-state" style="padding:20px 0;">
+            <i class="fas fa-box" style="font-size:32px; color:#d8f3dc; margin-bottom:8px;"></i>
+            <p style="font-size:14px;">Nenhum item ainda</p>
+          </div>`;
+        } else {
+          atividadesEl.innerHTML = itens.slice(0, 3).map(item => `
+            <div class="tip-item" style="cursor:default;">
+              <div class="tip-ic">
+                ${item.imagem_url
+                  ? `<img src="${item.imagem_url}" style="width:32px;height:32px;object-fit:cover;border-radius:8px;" onerror="this.outerHTML='<i class=\\'fas fa-box\\'></i>'">`
+                  : `<i class="fas fa-box"></i>`}
+              </div>
+              <div class="tip-text">
+                <strong>${item.titulo}</strong>
+                <span>${item.status_item === 'trocado' ? 'Trocado' : item.disponivel ? 'Disponível' : 'Em negociação'}</span>
+              </div>
+              <a href="/items/${item.id}" style="color:var(--color-primary); font-size:12px;">Ver</a>
+            </div>
+          `).join('');
+        }
+
+        // Trocas recentes — últimas 3
+        const trocasEl = document.getElementById('trocas-lista');
+        if (trocas.length === 0) {
+          trocasEl.innerHTML = `<div class="empty-state" style="padding:20px 0;">
+            <i class="fas fa-arrows-rotate" style="font-size:32px; color:#d8f3dc; margin-bottom:8px;"></i>
+            <p style="font-size:14px;">Nenhuma troca ainda</p>
+          </div>`;
+        } else {
+          const statusCor   = { pendente:'#e0a055', aceita:'#5db87a', recusada:'#e05555', concluida:'#2d6a4f' };
+          const statusLabel = { pendente:'Pendente', aceita:'Aceita', recusada:'Recusada', concluida:'Concluída' };
+          trocasEl.innerHTML = trocas.slice(0, 3).map(t => `
+            <div class="tip-item" style="cursor:default;">
+              <div class="tip-ic"><i class="fas fa-arrows-rotate"></i></div>
+              <div class="tip-text">
+                <strong>${t.itemDesejado?.titulo || t.itemOferecido?.titulo || 'Item'}</strong>
+                <span>${new Date(t.createdAt).toLocaleDateString('pt-BR')}</span>
+              </div>
+              <span style="font-size:12px; font-weight:700; color:${statusCor[t.status]};">
+                ${statusLabel[t.status]}
+              </span>
+            </div>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Erro ao carregar dashboard:', err);
+      }
+    }
+
+    carregarDashboard();
+  </script>
 </body>
 </html>
