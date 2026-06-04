@@ -7,6 +7,7 @@ require('dotenv').config();
 
 const app = express();
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000/api';
+const isProd = process.env.NODE_ENV === 'production';
 
 // ── View Engine ──────────────────────────────────────────────
 app.set('view engine', 'ejs');
@@ -15,6 +16,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+
+// ── Opções de cookie ──────────────────────────────────────────
+// Em produção (HTTPS): secure + sameSite none para cross-site
+// Em dev (HTTP):       sem secure, sameSite lax
+const cookieOpts = isProd
+  ? { httpOnly: true, secure: true, sameSite: 'none', maxAge: 7 * 24 * 60 * 60 * 1000 }
+  : { httpOnly: true, secure: false, sameSite: 'lax', maxAge: 7 * 24 * 60 * 60 * 1000 };
+
+const cookieOptsPublic = { ...cookieOpts, httpOnly: false };
 
 // ── Middleware: protege rotas privadas ────────────────────────
 const autenticar = (req, res, next) => {
@@ -74,13 +84,8 @@ app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   try {
     const { data } = await axios.post(`${BACKEND_URL}/auth/login`, { email, senha });
-    const cookieOpts = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    };
-    res.cookie('token', data.token, cookieOpts);
-    res.cookie('usuario', JSON.stringify(data.user), { ...cookieOpts, httpOnly: false });
+    res.cookie('token',   data.token,                    cookieOpts);
+    res.cookie('usuario', JSON.stringify(data.user),     cookieOptsPublic);
     res.redirect('/dashboard');
   } catch (err) {
     const msg = err.response?.data?.erro || 'E-mail ou senha incorretos.';
@@ -94,13 +99,8 @@ app.post('/register', async (req, res) => {
   try {
     await axios.post(`${BACKEND_URL}/auth/register`, { nome, email, senha });
     const { data } = await axios.post(`${BACKEND_URL}/auth/login`, { email, senha });
-    const cookieOpts = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    };
-    res.cookie('token', data.token, cookieOpts);
-    res.cookie('usuario', JSON.stringify(data.user), { ...cookieOpts, httpOnly: false });
+    res.cookie('token',   data.token,                    cookieOpts);
+    res.cookie('usuario', JSON.stringify(data.user),     cookieOptsPublic);
     res.redirect('/dashboard');
   } catch (err) {
     const msg = err.response?.data?.erro || 'Erro ao cadastrar. Tente novamente.';
@@ -110,8 +110,8 @@ app.post('/register', async (req, res) => {
 
 // ── Logout ────────────────────────────────────────────────────
 app.get('/logout', (req, res) => {
-  res.clearCookie('token');
-  res.clearCookie('usuario');
+  res.clearCookie('token',   { ...cookieOpts,       httpOnly: true  });
+  res.clearCookie('usuario', { ...cookieOptsPublic, httpOnly: false });
   res.redirect('/login');
 });
 
@@ -125,7 +125,6 @@ app.get('/items', autenticar, (req, res) =>
 app.get('/items/create', autenticar, (req, res) =>
   res.render('items/create', { usuario: getUsuario(req), page: 'items', erro: null }));
 
-// ── POST Criar Item ───────────────────────────────────────────
 app.post('/items', autenticar, async (req, res) => {
   try {
     const { titulo, descricao, categoria, estado, imagem_url } = req.body;
@@ -146,7 +145,6 @@ app.get('/items/:id/edit', autenticar, async (req, res) => {
   }
 });
 
-// ── POST Editar Item ──────────────────────────────────────────
 app.post('/items/:id/edit', autenticar, async (req, res) => {
   try {
     const { titulo, descricao, categoria, estado, imagem_url } = req.body;
@@ -195,12 +193,9 @@ app.get('/profile', autenticar, (req, res) =>
 app.get('/settings', autenticar, (req, res) =>
   res.render('settings/index', { usuario: getUsuario(req), page: 'settings' }));
 
-// ── Explorar itens ────────────────────────────────────────────
 app.get('/explore', autenticar, (req, res) =>
   res.render('items/explore', { usuario: getUsuario(req), page: 'explore' }));
 
-// ── Perfil público de outro usuário ──────────────────────────
-// ✅ CORRIGIDO: busca o usuário diretamente pelo ID, não depende de ter itens
 app.get('/users/:id', autenticar, async (req, res) => {
   try {
     const { data: dono } = await api(req).get(`/auth/users/${req.params.id}`);
@@ -210,7 +205,7 @@ app.get('/users/:id', autenticar, async (req, res) => {
   }
 });
 
-// ── Proxy API — chamadas fetch do browser repassadas ao backend ──
+// ── Proxy API ─────────────────────────────────────────────────
 app.use('/api', autenticar, async (req, res) => {
   try {
     const { data } = await api(req)({
