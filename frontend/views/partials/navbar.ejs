@@ -1,7 +1,52 @@
+<%# 
+  Partial: navbar
+  Uso: <%- include('../partials/navbar', { titulo: 'Página', usuario: usuario }) %>
+  
+  Inclui automaticamente o botão hamburguer para mobile.
+%>
 <nav class="navbar">
-  <span class="page-title">ReUsePlus</span>
-  <div class="user-info">
-    Olá, <strong><%= usuario.nome %></strong>
-    <a href="/logout">Sair</a>
+        <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
+  <!-- Hamburguer — só aparece no mobile via CSS -->
+  <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <span class="page-title"><%= typeof titulo !== 'undefined' ? titulo : 'ReUsePlus' %></span>
+
+  <div class="navbar-right">
+    <button class="notif-btn" onclick="window.location.href='/trades'" aria-label="Notificações">
+      <i class="fas fa-bell"></i>
+      <span class="notif-badge" id="notif-badge"></span>
+    </button>
+
+    <div class="user-chip" id="user-chip" onclick="toggleUserMenu(event)">
+      <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
+      <span class="user-chip-name"><%= usuario.nome %></span>
+      <i class="fas fa-chevron-down user-chip-arrow"></i>
+      <div class="user-chip-menu" id="user-chip-menu">
+        <a href="/profile"><i class="fas fa-user"></i> Meu perfil</a>
+        <a href="/settings"><i class="fas fa-gear"></i> Configurações</a>
+        <a href="/impact"><i class="fas fa-leaf"></i> Impacto ambiental</a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
+      </div>
+    </div>
+
+    <a href="/logout" class="btn-logout">
+      <i class="fas fa-sign-out-alt"></i> Sair
+    </a>
   </div>
 </nav>
+
+<script>
+  function toggleUserMenu(e) {
+    e.stopPropagation();
+    document.getElementById('user-chip-menu').classList.toggle('open');
+  }
+  document.addEventListener('click', () => {
+    const m = document.getElementById('user-chip-menu');
+    if (m) m.classList.remove('open');
+  });
+</script>
+

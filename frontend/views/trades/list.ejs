@@ -14,23 +14,22 @@
       overflow: hidden;
       transition: box-shadow 0.2s;
     }
-    .trade-card-expanded:hover {
-      box-shadow: var(--shadow-md);
-    }
+    .trade-card-expanded:hover { box-shadow: var(--shadow-md); }
+
     .trade-card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
+      padding: 14px 16px;
       border-bottom: 1px solid var(--border-color);
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .trade-card-body {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 16px 20px;
+      gap: 10px;
+      padding: 14px 16px;
       flex-wrap: wrap;
     }
     .trade-item-thumb {
@@ -38,17 +37,17 @@
       align-items: center;
       gap: 10px;
       flex: 1;
-      min-width: 120px;
+      min-width: 0;
     }
     .trade-thumb-img {
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border-radius: 8px;
       background: var(--bg-main);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
+      font-size: 16px;
       color: #b0c4b1;
       overflow: hidden;
       flex-shrink: 0;
@@ -63,21 +62,25 @@
       letter-spacing: 0.4px;
     }
     .trade-item-title {
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
     }
     .trade-swap-icon {
-      font-size: 18px;
+      font-size: 16px;
       color: var(--color-primary);
       flex-shrink: 0;
     }
     .trade-card-footer {
-      padding: 12px 20px;
+      padding: 10px 16px;
       background: var(--bg-main);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
       border-top: 1px solid var(--border-color);
     }
@@ -89,6 +92,36 @@
       background: #f3e8ff; color: #6a1a8a;
       padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
     }
+
+    /* ── Filtros: scroll horizontal no mobile ── */
+    .trades-filter {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .trades-filter::-webkit-scrollbar { display: none; }
+    .trades-filter .filter-btn { flex-shrink: 0; }
+
+    /* ── Responsividade mobile ── */
+    @media (max-width: 600px) {
+      .trade-card-header { padding: 12px; }
+      .trade-card-body   { padding: 12px; gap: 8px; }
+      .trade-card-footer { padding: 10px 12px; }
+
+      /* Header: empilha info + badges em coluna */
+      .trade-card-header > div:first-child { flex: 1; min-width: 0; }
+      .trade-card-header > div:last-child  { width: 100%; justify-content: flex-start; }
+
+      /* Body: itens ficam lado a lado compactos */
+      .trade-item-title { max-width: 90px; font-size: 12px; }
+
+      /* Footer: botões ocupam largura total */
+      .trade-card-footer { gap: 6px; }
+      .trade-card-footer .btn-sm { flex: 1; justify-content: center; text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -96,6 +129,9 @@
     <%- include('../partials/sidebar', { page: 'trades', usuario: usuario }) %>
     <div class="main-content">
       <nav class="navbar">
+        <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
         <span class="page-title">Trocas</span>
         <div class="navbar-right">
           <button class="notif-btn" aria-label="Notificações" onclick="window.location.href='/trades?filtro=pendente'">
@@ -104,7 +140,7 @@
           </button>
           <div class="user-chip" onclick="window.location.href='/profile'" style="cursor:pointer;">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
-            <span><%= usuario.nome %></span>
+            <span class="user-chip-name"><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
@@ -173,7 +209,6 @@
     const statusLabel = { pendente:'Pendente', aceita:'Aceita', recusada:'Recusada', concluida:'Concluída' };
     const statusCor   = { pendente:'#e0a055', aceita:'#5db87a', recusada:'#e05555', concluida:'#2d6a4f' };
 
-    // Notif badge
     fetch('/api/notifications/count').then(r => r.json()).then(d => {
       if (d.count > 0) {
         const b = document.getElementById('notif-badge');
@@ -181,7 +216,6 @@
       }
     }).catch(() => {});
 
-    // Toast de sucesso ao chegar da request
     if (new URLSearchParams(window.location.search).get('sucesso')) {
       mostrarToast('Solicitação de troca enviada com sucesso!', true);
       history.replaceState({}, '', '/trades');
@@ -211,10 +245,10 @@
       list.style.display = 'flex';
 
       list.innerHTML = ativas.map(trade => {
-        const enviada   = trade.solicitante_id === usuarioId;
+        const enviada    = trade.solicitante_id === usuarioId;
         const outraParte = enviada ? (trade.receptor?.nome || 'Usuário') : (trade.solicitante?.nome || 'Usuário');
-        const itemOfer  = trade.itemOferecido;
-        const itemDesej = trade.itemDesejado;
+        const itemOfer   = trade.itemOferecido;
+        const itemDesej  = trade.itemDesejado;
 
         const thumbHtml = (item) => item
           ? (item.imagem_url
@@ -235,11 +269,8 @@
               <i class="fas fa-ban" style="margin-right:5px;"></i>Cancelar
             </button>`;
           if (trade.status === 'aceita') {
-            // ✅ verifica se o usuário atual já confirmou
-            const euJaConfirmei = (enviada && trade.confirmado_solicitante) ||
-                                  (!enviada && trade.confirmado_receptor);
-            const outraParteConfirmou = (enviada && trade.confirmado_receptor) ||
-                                        (!enviada && trade.confirmado_solicitante);
+            const euJaConfirmei      = (enviada && trade.confirmado_solicitante) || (!enviada && trade.confirmado_receptor);
+            const outraParteConfirmou = (enviada && trade.confirmado_receptor)   || (!enviada && trade.confirmado_solicitante);
             if (euJaConfirmei) return `
               <span style="font-size:13px; color:#2d6a4f; display:flex; align-items:center; gap:6px;">
                 <i class="fas fa-check-circle"></i> Você confirmou. Aguardando ${outraParte} confirmar.
@@ -256,16 +287,18 @@
         return `
           <div class="trade-card-expanded">
             <div class="trade-card-header">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <div class="trade-card-icon">
-                  <i class="fas fa-arrows-rotate"></i>
-                </div>
-                <div>
-                  <div class="trade-card-title">${enviada ? 'Para' : 'De'}: <strong>${outraParte}</strong></div>
-                  <div class="trade-card-date">${new Date(trade.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}</div>
+              <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                <div class="trade-card-icon"><i class="fas fa-arrows-rotate"></i></div>
+                <div style="min-width:0;">
+                  <div class="trade-card-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${enviada ? 'Para' : 'De'}: <strong>${outraParte}</strong>
+                  </div>
+                  <div class="trade-card-date">
+                    ${new Date(trade.createdAt).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' })}
+                  </div>
                 </div>
               </div>
-              <div style="display:flex; align-items:center; gap:10px;">
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span class="${enviada ? 'badge-enviada' : 'badge-recebida'}">
                   ${enviada ? 'Enviada' : 'Recebida'}
                 </span>
@@ -278,17 +311,15 @@
             <div class="trade-card-body">
               <div class="trade-item-thumb">
                 <div class="trade-thumb-img">${thumbHtml(itemOfer)}</div>
-                <div>
+                <div style="min-width:0;">
                   <div class="trade-item-label">Oferecido</div>
                   <div class="trade-item-title">${itemOfer?.titulo || '—'}</div>
                 </div>
               </div>
-
               <div class="trade-swap-icon"><i class="fas fa-right-left"></i></div>
-
               <div class="trade-item-thumb">
                 <div class="trade-thumb-img">${thumbHtml(itemDesej)}</div>
-                <div>
+                <div style="min-width:0;">
                   <div class="trade-item-label">Desejado</div>
                   <div class="trade-item-title">${itemDesej?.titulo || '—'}</div>
                 </div>
@@ -326,12 +357,9 @@
           const d = await res.json();
           mostrarToast(d.erro || 'Erro ao realizar ação.', false);
         }
-      } catch {
-        mostrarToast('Erro de conexão.', false);
-      }
+      } catch { mostrarToast('Erro de conexão.', false); }
     }
 
-    // ✅ CORRIGIDO: confirmação dupla — aguarda os dois confirmarem
     async function concluir(id) {
       if (!confirm('Confirmar que você recebeu o item e a troca foi realizada?')) return;
       try {
@@ -341,18 +369,12 @@
         });
         const d = await res.json();
         if (res.ok) {
-          if (d.concluida) {
-            mostrarToast('Troca concluída com sucesso! 🎉', true);
-          } else {
-            mostrarToast(d.mensagem || 'Sua confirmação foi registrada. Aguardando a outra parte.', true);
-          }
+          mostrarToast(d.concluida ? 'Troca concluída com sucesso! 🎉' : (d.mensagem || 'Confirmação registrada. Aguardando a outra parte.'), true);
           await carregarTrocas();
         } else {
           mostrarToast(d.erro || 'Erro ao concluir.', false);
         }
-      } catch {
-        mostrarToast('Erro de conexão.', false);
-      }
+      } catch { mostrarToast('Erro de conexão.', false); }
     }
 
     async function carregarTrocas() {

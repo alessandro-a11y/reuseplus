@@ -5,6 +5,10 @@
       <img src="/images/logo.png" alt="ReUsePlus Logo">
       <span class="logo-text">ReUse<span>+</span></span>
     </div>
+    <!-- Botão fechar (só aparece no mobile) -->
+    <button class="sidebar-close" id="sidebar-close" aria-label="Fechar menu">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
   <nav class="sidebar-nav">
@@ -31,7 +35,6 @@
     <a href="/messages" class="nav-item <%= typeof page !== 'undefined' && page === 'messages' ? 'active' : '' %>">
       <i class="fas fa-comment-dots"></i>
       <span class="nav-text">Mensagens</span>
-      <!-- Badge dinâmico: começa oculto, JS preenche o valor -->
       <span class="nav-badge" id="sidebar-msg-badge" style="display:none;"></span>
     </a>
     <a href="/ratings" class="nav-item <%= typeof page !== 'undefined' && page === 'ratings' ? 'active' : '' %>">
@@ -52,8 +55,7 @@
     </a>
   </nav>
 
-  <a href="/profile" class="sidebar-user"
-     style="text-decoration:none; display:flex; align-items:center; gap:10px; cursor:pointer;">
+  <a href="/profile" class="sidebar-user">
     <div class="s-avatar">
       <%= typeof usuario !== 'undefined' ? usuario.nome.charAt(0).toUpperCase() : 'U' %>
     </div>
@@ -63,7 +65,7 @@
       </span>
       <span class="s-user-role">Membro</span>
     </div>
-    <i class="fas fa-chevron-right" style="margin-left:auto; font-size:11px; color:#aaa; flex-shrink:0;"></i>
+    <i class="fas fa-chevron-right" style="margin-left:auto; font-size:11px; color:rgba(255,255,255,0.3); flex-shrink:0;"></i>
   </a>
 
   <div class="sidebar-footer">
@@ -75,18 +77,47 @@
 
 </aside>
 
+<!-- Overlay escuro (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <script>
-  /* ══════════════════════════════════════════
-     Badge de mensagens não lidas
-     Roda em TODAS as páginas que incluem a sidebar
-     ══════════════════════════════════════════ */
+  /* ── Sidebar mobile: abrir/fechar ── */
+  const sidebar        = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+  const sidebarClose   = document.getElementById('sidebar-close');
+
+  function abrirSidebar() {
+    sidebar.classList.add('open');
+    sidebarOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function fecharSidebar() {
+    sidebar.classList.remove('open');
+    sidebarOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (sidebarClose)   sidebarClose.addEventListener('click', fecharSidebar);
+  if (sidebarOverlay) sidebarOverlay.addEventListener('click', fecharSidebar);
+
+  // Fecha ao navegar (links da sidebar)
+  sidebar.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) fecharSidebar();
+    });
+  });
+
+  // Expõe para o hamburguer da navbar
+  window.abrirSidebar = abrirSidebar;
+
+  /* ── Badge de mensagens não lidas ── */
   async function atualizarBadgesSidebar() {
     try {
       const res = await fetch('/api/messages/count/nao-lidas');
       if (!res.ok) return;
       const { count } = await res.json();
 
-      // ── Badge da sidebar ──
       const sidebarBadge = document.getElementById('sidebar-msg-badge');
       if (sidebarBadge) {
         if (count > 0) {
@@ -97,7 +128,6 @@
         }
       }
 
-      // ── Badge do sino na navbar (presente em todas as páginas) ──
       const sinoBadge = document.getElementById('notif-badge');
       if (sinoBadge) {
         if (count > 0) {
@@ -107,16 +137,11 @@
           sinoBadge.classList.remove('show');
         }
       }
-
     } catch (_) {}
   }
 
-  // Roda ao carregar a página
   atualizarBadgesSidebar();
-
-  // Atualiza a cada 15s em todas as páginas
   setInterval(atualizarBadgesSidebar, 15000);
-
-  // Expõe globalmente para a página de mensagens chamar após ler uma conversa
   window.atualizarBadgesSidebar = atualizarBadgesSidebar;
 </script>
+

@@ -12,12 +12,15 @@
     <%- include('../partials/sidebar', { page: 'items', usuario: usuario }) %>
     <div class="main-content">
       <nav class="navbar">
+        <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
         <span class="page-title">Meus Itens</span>
         <div class="navbar-right">
           <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
-            <span><%= usuario.nome %></span>
+            <span class="user-chip-name"><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
@@ -189,3 +192,4 @@
   </script>
 </body>
 </html>
+

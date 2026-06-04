@@ -6,18 +6,55 @@
   <title>Impacto Ambiental — ReUsePlus</title>
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* ── Gráfico de barras ── */
+    .chart-area {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 120px;
+      padding: 0 4px 0;
+      margin: 20px 0 8px;
+    }
+    .chart-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .chart-col .bar {
+      width: 100%;
+      background: #d8f3dc;
+      border-radius: 6px 6px 0 0;
+      min-height: 6px;
+      transition: background 0.2s;
+    }
+    .chart-col:hover .bar { background: #52b788; }
+    .chart-col .bar-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
   <div class="layout">
     <%- include('../partials/sidebar', { page: 'impact', usuario: usuario }) %>
     <div class="main-content">
       <nav class="navbar">
+        <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
         <span class="page-title">Impacto Ambiental</span>
         <div class="navbar-right">
           <button class="notif-btn" onclick="window.location.href='/trades'"><i class="fas fa-bell"></i><span class="notif-badge" id="notif-badge"></span></button>
           <div class="user-chip">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
-            <span><%= usuario.nome %></span>
+            <span class="user-chip-name"><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
@@ -69,12 +106,26 @@
               </div>
               <span class="badge-timeline">Últimos 30 dias</span>
             </div>
+
             <div class="chart-area">
-              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 1</span></div>
-              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 2</span></div>
-              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 3</span></div>
-              <div class="chart-bar" style="height:6px;"><span class="bar-label">Semana 4</span></div>
+              <div class="chart-col">
+                <div class="bar" style="height:6px;"></div>
+                <span class="bar-label">Sem 1</span>
+              </div>
+              <div class="chart-col">
+                <div class="bar" style="height:6px;"></div>
+                <span class="bar-label">Sem 2</span>
+              </div>
+              <div class="chart-col">
+                <div class="bar" style="height:6px;"></div>
+                <span class="bar-label">Sem 3</span>
+              </div>
+              <div class="chart-col">
+                <div class="bar" style="height:6px;"></div>
+                <span class="bar-label">Sem 4</span>
+              </div>
             </div>
+
             <div class="stats-mini">
               <div class="stat-mini">
                 <i class="fas fa-leaf"></i>

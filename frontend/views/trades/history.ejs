@@ -146,6 +146,9 @@
     <%- include('../partials/sidebar', { page: 'trades', usuario: usuario }) %>
     <div class="main-content">
       <nav class="navbar">
+        <button class="navbar-hamburger" onclick="window.abrirSidebar && window.abrirSidebar()" aria-label="Abrir menu">
+          <i class="fas fa-bars"></i>
+        </button>
         <span class="page-title">Histórico de Trocas</span>
         <div class="navbar-right">
           <button class="notif-btn" aria-label="Notificações" onclick="window.location.href='/trades?filtro=pendente'">
@@ -154,7 +157,7 @@
           </button>
           <div class="user-chip" onclick="window.location.href='/profile'" style="cursor:pointer;">
             <div class="avatar"><%= usuario.nome.charAt(0).toUpperCase() %></div>
-            <span><%= usuario.nome %></span>
+            <span class="user-chip-name"><%= usuario.nome %></span>
           </div>
           <a href="/logout" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Sair</a>
         </div>
@@ -348,3 +351,4 @@
   </script>
 </body>
 </html>
+
